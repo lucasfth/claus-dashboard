@@ -9,4 +9,10 @@ crons.interval(
   internal.activities.deleteOlderThanTwoDays,
 )
 
+crons.interval(
+  'delete tasks older than two days',
+  { hours: 6 },
+  internal.tasks.deleteOlderThanTwoDays,
+)
+
 export default crons
