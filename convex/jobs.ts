@@ -74,6 +74,8 @@ export const upsertMany = internalMutation({
     ),
   },
   handler: async (ctx, args) => {
+    const incomingNames = new Set(args.jobs.map(j => j.name))
+
     for (const job of args.jobs) {
       const existing = await ctx.db
         .query('jobs')
@@ -87,6 +89,14 @@ export const upsertMany = internalMutation({
         await ctx.db.patch(existing._id, patch)
       } else {
         await ctx.db.insert('jobs', { ...job, updatedAt: Date.now() })
+      }
+    }
+
+    // Prune jobs no longer present in the local filesystem snapshot
+    const all = await ctx.db.query('jobs').collect()
+    for (const job of all) {
+      if (!incomingNames.has(job.name)) {
+        await ctx.db.delete(job._id)
       }
     }
   },
