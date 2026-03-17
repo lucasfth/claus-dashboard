@@ -1,5 +1,8 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
-await navigateTo('/feed')
+
+onMounted(() => {
+  navigateTo('/feed')
+})
 </script>
 <template><div /></template>

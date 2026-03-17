@@ -1,3 +1,4 @@
+import type { ConvexClient } from 'convex/browser'
 import type { FunctionReference } from 'convex/server'
 import type { FunctionArgs, FunctionReturnType } from 'convex/server'
 

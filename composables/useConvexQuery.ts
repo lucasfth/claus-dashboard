@@ -1,3 +1,4 @@
+import type { ConvexClient } from 'convex/browser'
 import type { FunctionReference } from 'convex/server'
 import type { FunctionArgs, FunctionReturnType } from 'convex/server'
 
@@ -8,16 +9,14 @@ export function useConvexQuery<T extends FunctionReference<'query'>>(
   const { $convex } = useNuxtApp()
   const data = ref<FunctionReturnType<T> | undefined>(undefined)
 
-  let unsubscribe: (() => void) | undefined
+  let unsubscribe: ReturnType<ConvexClient['onUpdate']> | undefined
 
   onMounted(() => {
-    unsubscribe = ($convex as ConvexClient).subscribe(
+    unsubscribe = ($convex as ConvexClient).onUpdate(
       query,
       args,
-      {
-        onUpdate(value: FunctionReturnType<T>) {
-          data.value = value
-        },
+      (value: FunctionReturnType<T>) => {
+        data.value = value
       },
     )
   })

@@ -15,8 +15,8 @@ Real-time personal dashboard for the Claus AI assistant.
 ### 1. Convex project
 
 ```bash
-npm install
-npx convex dev
+bun install
+bunx convex dev
 ```
 
 This creates a Convex deployment and generates `convex/_generated/` locally.
@@ -50,13 +50,13 @@ Fill in:
 ### 5. Local dev
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 ### 6. Vercel deploy
 
 ```bash
-npx vercel
+bunx vercel
 ```
 
 Set the same env vars in Vercel project settings. For the GitHub OAuth callback URL, use your Vercel domain.
