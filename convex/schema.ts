@@ -25,5 +25,12 @@ export default defineSchema({
     schedule: v.string(),
     prompt: v.string(),
     updatedAt: v.number(),
+    pendingSchedule: v.optional(v.string()),
   }).index('by_name', ['name']),
+
+  messages: defineTable({
+    content: v.string(),
+    createdAt: v.number(),
+    processed: v.boolean(),
+  }).index('by_processed', ['processed']),
 })

@@ -6,6 +6,7 @@ const nav = [
   { href: '/feed', label: 'Feed' },
   { href: '/context', label: 'Context' },
   { href: '/jobs', label: 'Jobs' },
+  { href: '/send', label: 'Send' },
 ]
 
 async function signOut() {
@@ -19,7 +20,7 @@ async function signOut() {
     <nav v-if="loggedIn" class="border-b border-gray-800 sticky top-0 z-10 bg-[#0a0a0a]">
       <div class="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
         <div class="flex items-center gap-6">
-          <span class="font-semibold text-sm tracking-wide">⚡ claus</span>
+          <span class="font-semibold text-sm tracking-wide">&#x26A1; claus</span>
           <NuxtLink
             v-for="link in nav"
             :key="link.href"

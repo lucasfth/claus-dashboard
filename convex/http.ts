@@ -63,9 +63,73 @@ const getContext = httpAction(async (ctx, request) => {
   )
 })
 
+const getJobUpdates = httpAction(async (ctx, request) => {
+  const err = checkSecret(request)
+  if (err) return err
+
+  const pending = await ctx.runQuery(internal.jobs.listPending, {})
+  const result = pending.map(j => ({ name: j.name, schedule: j.pendingSchedule! }))
+
+  return new Response(JSON.stringify(result), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  })
+})
+
+const clearJobUpdate = httpAction(async (ctx, request) => {
+  const err = checkSecret(request)
+  if (err) return err
+
+  const body = await request.json().catch(() => null)
+  if (!body?.name || !body?.schedule) {
+    return new Response(JSON.stringify({ error: 'Missing name or schedule' }), { status: 400 })
+  }
+
+  await ctx.runMutation(internal.jobs.clearPending, {
+    name: body.name,
+    appliedSchedule: body.schedule,
+  })
+
+  return new Response(JSON.stringify({ ok: true }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  })
+})
+
+const getMessages = httpAction(async (ctx, request) => {
+  const err = checkSecret(request)
+  if (err) return err
+
+  const messages = await ctx.runQuery(internal.messages.listUnprocessed, {})
+
+  return new Response(JSON.stringify(messages), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  })
+})
+
+const markMessageProcessed = httpAction(async (ctx, request) => {
+  const err = checkSecret(request)
+  if (err) return err
+
+  const body = await request.json().catch(() => null)
+  if (!body?.id) return new Response(JSON.stringify({ error: 'Missing id' }), { status: 400 })
+
+  await ctx.runMutation(internal.messages.markProcessed, { id: body.id })
+
+  return new Response(JSON.stringify({ ok: true }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  })
+})
+
 const http = httpRouter()
 http.route({ path: '/pushActivity', method: 'POST', handler: pushActivity })
 http.route({ path: '/pushJobs', method: 'POST', handler: pushJobs })
 http.route({ path: '/getContext', method: 'GET', handler: getContext })
+http.route({ path: '/getJobUpdates', method: 'GET', handler: getJobUpdates })
+http.route({ path: '/clearJobUpdate', method: 'POST', handler: clearJobUpdate })
+http.route({ path: '/getMessages', method: 'GET', handler: getMessages })
+http.route({ path: '/markMessageProcessed', method: 'POST', handler: markMessageProcessed })
 
 export default http

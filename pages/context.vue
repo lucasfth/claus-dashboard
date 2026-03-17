@@ -46,7 +46,10 @@ function formatDate(ts: number) {
 
 <template>
   <div>
-    <h1 class="text-xl font-semibold mb-6">Context Pad</h1>
+    <div class="mb-6">
+      <h1 class="text-xl font-semibold">Context Pad</h1>
+      <p class="text-xs text-gray-600 mt-1">Notes Claus reads at the start of every session. Use it for reminders, ongoing context, or anything you want him to keep in mind.</p>
+    </div>
 
     <div v-if="contextNote === undefined" class="h-64 rounded-lg bg-gray-900/50 animate-pulse" />
 
@@ -54,7 +57,7 @@ function formatDate(ts: number) {
       <textarea
         ref="textarea"
         v-model="value"
-        placeholder="Notes for Claus — extra context he reads each session..."
+        placeholder="e.g. 'Focus on thesis this week', 'Don't push to osws main until Monday', 'Remind me about the Estaid deploy'..."
         class="w-full min-h-[300px] bg-gray-900/30 border border-gray-800/50 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 resize-none focus:outline-none focus:border-gray-600 font-mono leading-relaxed transition-colors"
       />
       <div class="flex items-center justify-between">
@@ -70,7 +73,7 @@ function formatDate(ts: number) {
             : 'bg-gray-800 text-white hover:bg-gray-700 border-gray-700/50'"
           @click="save"
         >
-          {{ saving ? 'saving…' : saved ? 'saved' : 'save' }}
+          {{ saving ? 'saving\u2026' : saved ? 'saved' : 'save' }}
         </button>
       </div>
     </div>
