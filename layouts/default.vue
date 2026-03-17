@@ -1,13 +1,13 @@
 <script setup lang="ts">
 const route = useRoute()
-const { loggedIn, user, clear } = useUserSession()
+const { loggedIn, clear } = useUserSession()
 
 const nav = [
   { href: '/feed', label: 'Feed' },
   { href: '/context', label: 'Context' },
   { href: '/jobs', label: 'Jobs' },
   { href: '/commands', label: 'Commands' },
-  { href: '/send', label: 'Send' },
+  { href: '/tasks', label: 'Tasks' },
 ]
 
 async function signOut() {
@@ -27,7 +27,7 @@ async function signOut() {
             :key="link.href"
             :to="link.href"
             class="text-sm transition-colors"
-            :class="route.path === link.href ? 'text-white' : 'text-gray-500 hover:text-gray-300'"
+            :class="route.path.startsWith(link.href) ? 'text-white' : 'text-gray-500 hover:text-gray-300'"
           >
             {{ link.label }}
           </NuxtLink>

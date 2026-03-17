@@ -94,6 +94,22 @@ const markMessageProcessed = httpAction(async (ctx, request) => {
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } })
 })
 
+const getTasks = httpAction(async (ctx, request) => {
+  const err = checkSecret(request)
+  if (err) return err
+  const tasks = await ctx.runQuery(internal.tasks.listPending, {})
+  return new Response(JSON.stringify(tasks), { status: 200, headers: { 'Content-Type': 'application/json' } })
+})
+
+const markTaskDone = httpAction(async (ctx, request) => {
+  const err = checkSecret(request)
+  if (err) return err
+  const body = await request.json().catch(() => null)
+  if (!body?.id) return new Response(JSON.stringify({ error: 'Missing id' }), { status: 400 })
+  await ctx.runMutation(internal.tasks.markDone, { id: body.id })
+  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+})
+
 const http = httpRouter()
 http.route({ path: '/pushActivity', method: 'POST', handler: pushActivity })
 http.route({ path: '/pushJobs', method: 'POST', handler: pushJobs })
@@ -103,5 +119,7 @@ http.route({ path: '/getJobUpdates', method: 'GET', handler: getJobUpdates })
 http.route({ path: '/clearJobUpdate', method: 'POST', handler: clearJobUpdate })
 http.route({ path: '/getMessages', method: 'GET', handler: getMessages })
 http.route({ path: '/markMessageProcessed', method: 'POST', handler: markMessageProcessed })
+http.route({ path: '/getTasks', method: 'GET', handler: getTasks })
+http.route({ path: '/markTaskDone', method: 'POST', handler: markTaskDone })
 
 export default http

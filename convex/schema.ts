@@ -41,4 +41,12 @@ export default defineSchema({
     type: v.union(v.literal('command'), v.literal('skill'), v.literal('claudeclaw')),
     updatedAt: v.number(),
   }).index('by_name', ['name']),
+
+  tasks: defineTable({
+    name: v.string(),
+    prompt: v.string(),
+    runAt: v.optional(v.number()),
+    status: v.union(v.literal('pending'), v.literal('done'), v.literal('cancelled')),
+    createdAt: v.number(),
+  }).index('by_status', ['status']),
 })
