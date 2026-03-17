@@ -32,16 +32,17 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Validate Convex deploy key
+      - name: Run Convex dev (one-shot)
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
         run: |
           if [ -z "$CONVEX_DEPLOY_KEY" ]; then
-            echo "::error::Missing CONVEX_DEPLOY_KEY. Add or rotate it in GitHub repo settings -> Secrets and variables -> Actions."
+            echo "::error::Missing CONVEX_DEPLOY_KEY"
+            echo "Add it to your repository:"
+            echo "1. Go to https://dashboard.convex.dev"
+            echo "2. Find your deployment and get your deploy key"
+            echo "3. Go to GitHub repo Settings → Secrets and variables → Actions"
+            echo "4. Create a new secret named 'CONVEX_DEPLOY_KEY' with the deploy key value"
             exit 1
           fi
-
-      - name: Run Convex dev (one-shot)
-        env:
-          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
-        run: bunx convex dev --once
+          bunx convex dev --once
