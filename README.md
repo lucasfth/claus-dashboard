@@ -96,6 +96,27 @@ If the workflow fails with `Please set CONVEX_DEPLOY_KEY ...`, the key is missin
 gh secret set CONVEX_DEPLOY_KEY --body "<paste-new-convex-deploy-key>"
 ```
 
+## GitHub Actions: Automatic Convex Sync
+
+The repository includes a GitHub Actions workflow that automatically syncs your Convex functions whenever you push to the `main` branch.
+
+### Setup (one-time)
+
+Run the setup script:
+
+```bash
+./scripts/setup-convex-github.sh
+```
+
+This will:
+1. Guide you to get your Convex deploy key from https://dashboard.convex.dev
+2. Add it as a GitHub secret (`CONVEX_DEPLOY_KEY`)
+3. Enable the automatic workflow
+
+After setup, any push to `main` will automatically run `bunx convex dev --once` to sync your Convex functions.
+
+For detailed instructions, see [CONVEX_SETUP.md](./CONVEX_SETUP.md).
+
 ## Bridge
 
 The `claus_bridge.py` script (in the `claus2` project on the Zenfone) syncs Claus's activity logs and jobs to Convex. Configure it at `.claude/claudeclaw/bridge_config.json`:
