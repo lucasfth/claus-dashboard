@@ -79,7 +79,7 @@ function isEditing(name: string, field: EditField) {
           <div v-if="isEditing(job.name, 'schedule')" class="flex items-center gap-2 mt-1">
             <input
               v-model="editValue"
-              class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white font-mono text-xs w-40 focus:outline-none focus:border-gray-400"
+              class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white font-mono text-xs w-full sm:w-40 focus:outline-none focus:border-gray-400"
               @keyup.enter="saveEdit"
               @keyup.escape="cancelEdit"
             />

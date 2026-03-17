@@ -88,7 +88,13 @@ bunx convex dev --once
 
 In GitHub, add this repository secret so the workflow can authenticate with Convex:
 
-- `CONVEX_DEPLOY_KEY` — from Convex dashboard → your deployment → Settings
+- `CONVEX_DEPLOY_KEY` — create it in Convex dashboard → your deployment → **Settings → Deploy Keys** (or API keys, depending on UI)
+
+If the workflow fails with `Please set CONVEX_DEPLOY_KEY ...`, the key is missing, expired, or from a different deployment. Generate a fresh key and re-save it in GitHub:
+
+```bash
+gh secret set CONVEX_DEPLOY_KEY --body "<paste-new-convex-deploy-key>"
+```
 
 ## Bridge
 

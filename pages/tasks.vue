@@ -60,16 +60,16 @@ function formatRunAt(ts: number): string {
 
     <!-- Create form -->
     <div class="rounded-lg bg-gray-900/30 border border-gray-800/50 px-4 py-4 mb-6 space-y-3">
-      <div class="flex gap-3">
+      <div class="flex flex-col sm:flex-row gap-3">
         <input
           v-model="name"
           placeholder="Label (optional)"
-          class="bg-gray-800/50 border border-gray-700/50 rounded px-3 py-1.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gray-500 w-40"
+          class="bg-gray-800/50 border border-gray-700/50 rounded px-3 py-1.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gray-500 w-full sm:w-40"
         />
         <input
           v-model="runAt"
           type="datetime-local"
-          class="bg-gray-800/50 border border-gray-700/50 rounded px-3 py-1.5 text-sm text-gray-300 focus:outline-none focus:border-gray-500 flex-1 [color-scheme:dark]"
+          class="bg-gray-800/50 border border-gray-700/50 rounded px-3 py-1.5 text-sm text-gray-300 focus:outline-none focus:border-gray-500 w-full sm:flex-1 max-w-full"
         />
       </div>
       <textarea
