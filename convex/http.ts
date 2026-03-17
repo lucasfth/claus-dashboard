@@ -68,7 +68,11 @@ const getJobUpdates = httpAction(async (ctx, request) => {
   if (err) return err
 
   const pending = await ctx.runQuery(internal.jobs.listPending, {})
-  const result = pending.map(j => ({ name: j.name, schedule: j.pendingSchedule! }))
+  const result = pending.map(j => ({
+    name: j.name,
+    schedule: j.pendingSchedule,
+    prompt: j.pendingPrompt,
+  }))
 
   return new Response(JSON.stringify(result), {
     status: 200,
@@ -81,13 +85,14 @@ const clearJobUpdate = httpAction(async (ctx, request) => {
   if (err) return err
 
   const body = await request.json().catch(() => null)
-  if (!body?.name || !body?.schedule) {
-    return new Response(JSON.stringify({ error: 'Missing name or schedule' }), { status: 400 })
+  if (!body?.name) {
+    return new Response(JSON.stringify({ error: 'Missing name' }), { status: 400 })
   }
 
   await ctx.runMutation(internal.jobs.clearPending, {
     name: body.name,
     appliedSchedule: body.schedule,
+    appliedPrompt: body.prompt,
   })
 
   return new Response(JSON.stringify({ ok: true }), {

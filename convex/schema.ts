@@ -26,6 +26,7 @@ export default defineSchema({
     prompt: v.string(),
     updatedAt: v.number(),
     pendingSchedule: v.optional(v.string()),
+    pendingPrompt: v.optional(v.string()),
   }).index('by_name', ['name']),
 
   messages: defineTable({
