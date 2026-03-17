@@ -76,6 +76,20 @@ bun run build
 For GitHub OAuth callback URL, use your Vercel domain:
 `https://<your-domain>/auth/github`
 
+### 7. GitHub Actions Convex sync (push to `main`)
+
+This repo includes `.github/workflows/convex-dev.yml`, which runs on every push to `main` and executes:
+
+```bash
+bunx convex dev --once
+```
+
+`--once` is the CI-safe version of `convex dev` (it runs the sync and exits instead of staying open).
+
+In GitHub, add this repository secret so the workflow can authenticate with Convex:
+
+- `CONVEX_DEPLOY_KEY` — from Convex dashboard → your deployment → Settings
+
 ## Bridge
 
 The `claus_bridge.py` script (in the `claus2` project on the Zenfone) syncs Claus's activity logs and jobs to Convex. Configure it at `.claude/claudeclaw/bridge_config.json`:
