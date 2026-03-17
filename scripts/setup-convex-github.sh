@@ -30,9 +30,10 @@ echo ""
 echo "📋 Instructions to get your Convex Deploy Key:"
 echo "   1. Open https://dashboard.convex.dev in your browser"
 echo "   2. Click on your 'claus-dashboard' project"
-echo "   3. Click Settings (gear icon) in the left sidebar"
-echo "   4. Look for 'API Keys' or 'Deploy Key' section"
-echo "   5. Copy the deploy key value"
+echo "   3. Go to Settings → Authentication"
+echo "   4. Under 'API Keys' or 'Deploy Keys', find your key"
+echo "   5. Click the copy icon (📋) next to the key to copy the full key value"
+echo "   ⚠️  Make sure you copy the FULL KEY VALUE (long base64 string), not just the name!"
 echo ""
 
 # Prompt for deploy key
@@ -45,8 +46,10 @@ if [ -z "$DEPLOY_KEY" ]; then
 fi
 
 # Validate the key format (basic check)
-if [ ${#DEPLOY_KEY} -lt 10 ]; then
-  echo "❌ Deploy key seems too short. Please verify you copied it correctly."
+if [ ${#DEPLOY_KEY} -lt 50 ]; then
+  echo "❌ Deploy key seems too short (got ${#DEPLOY_KEY} chars, expected 50+)."
+  echo "   Make sure you copied the FULL KEY VALUE, not just the key name."
+  echo "   The key should be a long base64-encoded string starting with 'eyJ'"
   exit 1
 fi
 
