@@ -34,4 +34,11 @@ export default defineSchema({
     createdAt: v.number(),
     processed: v.boolean(),
   }).index('by_processed', ['processed']),
+
+  commands: defineTable({
+    name: v.string(),
+    description: v.string(),
+    type: v.union(v.literal('command'), v.literal('skill'), v.literal('claudeclaw')),
+    updatedAt: v.number(),
+  }).index('by_name', ['name']),
 })

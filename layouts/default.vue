@@ -6,6 +6,7 @@ const nav = [
   { href: '/feed', label: 'Feed' },
   { href: '/context', label: 'Context' },
   { href: '/jobs', label: 'Jobs' },
+  { href: '/commands', label: 'Commands' },
   { href: '/send', label: 'Send' },
 ]
 
