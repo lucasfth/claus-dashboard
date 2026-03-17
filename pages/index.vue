@@ -5,4 +5,4 @@ onMounted(() => {
   navigateTo('/feed')
 })
 </script>
-<template><div /></template>
+<template class="bg-black"><div /></template>
