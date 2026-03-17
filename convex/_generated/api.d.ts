@@ -11,6 +11,7 @@
 import type * as activities from "../activities.js";
 import type * as commands from "../commands.js";
 import type * as context from "../context.js";
+import type * as crons from "../crons.js";
 import type * as http from "../http.js";
 import type * as jobs from "../jobs.js";
 import type * as messages from "../messages.js";
@@ -25,6 +26,7 @@ declare const fullApi: ApiFromModules<{
   activities: typeof activities;
   commands: typeof commands;
   context: typeof context;
+  crons: typeof crons;
   http: typeof http;
   jobs: typeof jobs;
   messages: typeof messages;
