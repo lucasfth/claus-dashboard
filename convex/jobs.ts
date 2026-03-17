@@ -69,6 +69,7 @@ export const upsertMany = internalMutation({
         name: v.string(),
         schedule: v.string(),
         prompt: v.string(),
+        runner: v.optional(v.union(v.literal('claude'), v.literal('python'))),
       }),
     ),
   },
@@ -82,6 +83,7 @@ export const upsertMany = internalMutation({
         const patch: Record<string, unknown> = { updatedAt: Date.now() }
         if (!existing.pendingSchedule) patch.schedule = job.schedule
         if (!existing.pendingPrompt) patch.prompt = job.prompt
+        if (job.runner) patch.runner = job.runner
         await ctx.db.patch(existing._id, patch)
       } else {
         await ctx.db.insert('jobs', { ...job, updatedAt: Date.now() })

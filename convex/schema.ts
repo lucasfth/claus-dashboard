@@ -25,6 +25,7 @@ export default defineSchema({
     schedule: v.string(),
     prompt: v.string(),
     updatedAt: v.number(),
+    runner: v.optional(v.union(v.literal('claude'), v.literal('python'))),
     pendingSchedule: v.optional(v.string()),
     pendingPrompt: v.optional(v.string()),
   }).index('by_name', ['name']),

@@ -45,13 +45,18 @@ function formatDate(ts: number) {
 function isEditing(name: string, field: EditField) {
   return editing.value?.name === name && editing.value?.field === field
 }
+
+const RUNNER_STYLE: Record<string, string> = {
+  python: 'bg-green-900/50 text-green-400 border-green-800/50',
+  claude: 'bg-orange-900/50 text-orange-400 border-orange-800/50',
+}
 </script>
 
 <template>
   <div>
     <div class="mb-6">
       <h1 class="text-xl font-semibold">Scheduled Jobs</h1>
-      <p class="text-xs text-gray-600 mt-1">Hover a field to edit it. Changes are picked up by Claus within 15 min.</p>
+      <p class="text-xs text-gray-600 mt-1">Hover a field to edit. <span class="text-green-600">python</span> = zero tokens. <span class="text-orange-600">claude</span> = uses tokens.</p>
     </div>
 
     <div v-if="jobs === undefined" class="space-y-2">
@@ -59,7 +64,7 @@ function isEditing(name: string, field: EditField) {
     </div>
 
     <p v-else-if="jobs.length === 0" class="text-gray-600 text-sm">
-      No jobs yet. Run the bridge to sync jobs from Claus.
+      No jobs yet. Bridge syncs jobs on next run.
     </p>
 
     <div v-else class="space-y-3">
@@ -69,7 +74,14 @@ function isEditing(name: string, field: EditField) {
         class="rounded-lg bg-gray-900/30 border border-gray-800/50 px-4 py-3 group"
       >
         <div class="flex items-start justify-between gap-4 mb-2">
-          <span class="font-mono text-xs text-white font-semibold">{{ job.name }}</span>
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-xs text-white font-semibold">{{ job.name }}</span>
+            <span
+              v-if="job.runner"
+              class="inline-block text-xs px-1.5 py-0.5 rounded font-mono border"
+              :class="RUNNER_STYLE[job.runner] ?? RUNNER_STYLE.claude"
+            >{{ job.runner }}</span>
+          </div>
           <span class="text-gray-700 text-xs whitespace-nowrap">{{ formatDate(job.updatedAt) }}</span>
         </div>
 
@@ -97,9 +109,9 @@ function isEditing(name: string, field: EditField) {
           </div>
         </div>
 
-        <!-- Prompt -->
+        <!-- Prompt / Command -->
         <div>
-          <span class="text-xs text-gray-600 uppercase tracking-wide">prompt</span>
+          <span class="text-xs text-gray-600 uppercase tracking-wide">{{ job.runner === 'python' ? 'command' : 'prompt' }}</span>
           <div v-if="isEditing(job.name, 'prompt')" class="mt-1 space-y-2">
             <textarea
               v-model="editValue"
@@ -117,6 +129,7 @@ function isEditing(name: string, field: EditField) {
               {{ job.pendingPrompt ? job.pendingPrompt + ' (pending)' : job.prompt }}
             </p>
             <button
+              v-if="job.runner !== 'python'"
               class="opacity-0 group-hover:opacity-100 text-gray-700 hover:text-gray-400 text-xs transition-opacity shrink-0"
               @click="startEdit(job.name, 'prompt', job.pendingPrompt ?? job.prompt)"
             >edit</button>
