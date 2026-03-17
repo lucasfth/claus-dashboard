@@ -35,6 +35,13 @@ echo "   4. Under 'API Keys' or 'Deploy Keys', find your key"
 echo "   5. Click the copy icon (📋) next to the key to copy the full key value"
 echo "   ⚠️  Make sure you copy the FULL KEY VALUE (long base64 string), not just the name!"
 echo ""
+echo "If you don't see the key value:"
+echo "   - Click the ⚙️ (Settings) or 🔄 (Regenerate) button next to the key"
+echo "   - Convex will generate a new key and show the value in a popup"
+echo "   - Copy the value immediately (it won't be shown again)"
+echo ""
+echo "📖 For detailed help: See CONVEX_DEPLOY_KEY_GUIDE.md in the repo"
+echo ""
 
 # Prompt for deploy key
 read -sp "🔐 Paste your Convex deploy key and press Enter: " DEPLOY_KEY

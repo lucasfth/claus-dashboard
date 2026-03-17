@@ -23,6 +23,9 @@ If you prefer to add the secret manually:
 
 ⚠️ **Important:** Copy the full key value, not just the key name!
 
+**See [CONVEX_DEPLOY_KEY_GUIDE.md](./CONVEX_DEPLOY_KEY_GUIDE.md) for detailed instructions on finding/generating your deploy key.**
+
+Quick steps:
 1. Visit https://dashboard.convex.dev
 2. Click on your "claus-dashboard" project
 3. Go to **Settings → Authentication**
@@ -30,6 +33,8 @@ If you prefer to add the secret manually:
 5. Click the copy icon (📋) next to your key to copy the **full key value**
    - The key should be a long base64-encoded string starting with `eyJ`
    - **NOT** just the key name like `claus-lpaia-dashboard-deploy`
+
+If you can't find the key value or need to regenerate it, see [CONVEX_DEPLOY_KEY_GUIDE.md](./CONVEX_DEPLOY_KEY_GUIDE.md).
 
 ### 2. Add it to GitHub Secrets
 
