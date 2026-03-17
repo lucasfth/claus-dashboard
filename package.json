@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "nuxt dev",
-    "prebuild": "convex codegen",
+    "codegen": "convex codegen",
     "build": "nuxt build",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
