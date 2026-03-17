@@ -59,7 +59,22 @@ bun run dev
 bunx vercel
 ```
 
-Set the same env vars in Vercel project settings. For the GitHub OAuth callback URL, use your Vercel domain.
+Set these env vars in Vercel Project Settings → Environment Variables:
+- `NUXT_PUBLIC_CONVEX_URL`
+- `NUXT_CONVEX_HTTP_URL` (or `CONVEX_SITE_URL`)
+- `BRIDGE_SECRET`
+- `NUXT_OAUTH_GITHUB_CLIENT_ID`
+- `NUXT_OAUTH_GITHUB_CLIENT_SECRET`
+- `NUXT_SESSION_PASSWORD`
+
+This project runs Convex codegen automatically before build (`prebuild: convex codegen`), so Vercel should use the normal build command:
+
+```bash
+bun run build
+```
+
+For GitHub OAuth callback URL, use your Vercel domain:
+`https://<your-domain>/auth/github`
 
 ## Bridge
 
