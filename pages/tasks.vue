@@ -19,6 +19,9 @@ const editName = ref('')
 const editPrompt = ref('')
 const editing = ref(false)
 
+const confirmingCancelId = ref<string | null>(null)
+const cancelling = ref(false)
+
 const STATUS_STYLE: Record<string, string> = {
   pending: 'bg-yellow-900/50 text-yellow-300 border-yellow-800/50',
   done: 'bg-green-900/50 text-green-300 border-green-800/50',
@@ -88,6 +91,22 @@ function cancelEdit() {
   editingId.value = null
   editName.value = ''
   editPrompt.value = ''
+}
+
+async function handleCancel(id: string) {
+  if (confirmingCancelId.value !== id) {
+    confirmingCancelId.value = id
+    return
+  }
+
+  if (cancelling.value) return
+  cancelling.value = true
+  try {
+    await cancel({ id })
+    confirmingCancelId.value = null
+  } finally {
+    cancelling.value = false
+  }
 }
 </script>
 
@@ -204,18 +223,40 @@ function cancelEdit() {
           <span class="text-xs text-gray-700">{{ relativeTime(task.createdAt) }}</span>
         </div>
 
-        <div v-if="task.status === 'pending'" class="flex gap-1 shrink-0">
-          <button
-            v-if="canEditTask(task)"
-            class="text-xs text-gray-700 hover:text-blue-400 transition-colors"
-            aria-label="Edit task"
-            @click="startEdit(task)"
-          >edit</button>
-          <button
-            class="text-xs text-gray-700 hover:text-red-400 transition-colors"
-            aria-label="Cancel task"
-            @click="cancel({ id: task._id })"
-          >cancel</button>
+        <div v-if="task.status === 'pending'" class="flex gap-1.5 shrink-0">
+          <template v-if="confirmingCancelId === task._id">
+            <button
+              :disabled="cancelling"
+              class="text-xs text-red-400 font-medium transition-colors hover:text-red-300 focus-visible:ring-1 focus-visible:ring-red-400 px-1 rounded disabled:opacity-50"
+              @click="handleCancel(task._id)"
+            >
+              {{ cancelling ? 'cancelling\u2026' : 'confirm' }}
+            </button>
+            <button
+              :disabled="cancelling"
+              class="text-xs text-gray-500 transition-colors hover:text-gray-300 focus-visible:ring-1 focus-visible:ring-gray-500 px-1 rounded disabled:opacity-50"
+              @click="confirmingCancelId = null"
+            >
+              back
+            </button>
+          </template>
+          <template v-else>
+            <button
+              v-if="canEditTask(task)"
+              class="text-xs text-gray-500 hover:text-blue-400 transition-colors focus-visible:ring-1 focus-visible:ring-blue-400 px-1 rounded"
+              aria-label="Edit task"
+              @click="startEdit(task)"
+            >
+              edit
+            </button>
+            <button
+              class="text-xs text-gray-500 hover:text-red-400 transition-colors focus-visible:ring-1 focus-visible:ring-red-400 px-1 rounded"
+              aria-label="Cancel task"
+              @click="handleCancel(task._id)"
+            >
+              cancel
+            </button>
+          </template>
         </div>
       </div>
     </div>
