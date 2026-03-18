@@ -49,7 +49,9 @@ export default defineSchema({
     runAt: v.optional(v.number()),
     status: v.union(v.literal('pending'), v.literal('done'), v.literal('cancelled')),
     createdAt: v.number(),
-  }).index('by_status', ['status']),
+  })
+    .index('by_status', ['status'])
+    .index('by_createdAt', ['createdAt']),
 
   bridgetStatus: defineTable({
     lastSync: v.number(),
