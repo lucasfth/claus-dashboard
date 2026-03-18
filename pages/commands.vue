@@ -4,6 +4,7 @@ import { api } from '~/convex/_generated/api'
 definePageMeta({ middleware: 'auth' })
 
 const commands = useConvexQuery(api.commands.list, {})
+const copied = ref(false)
 
 const TYPE_STYLE: Record<string, string> = {
   command: 'bg-blue-900/50 text-blue-300 border-blue-800/50',
@@ -18,13 +19,38 @@ const sorted = computed(() => {
     return (order[a.type] ?? 3) - (order[b.type] ?? 3) || a.name.localeCompare(b.name)
   })
 })
+
+function copyAllCommands() {
+  if (!sorted.value) return
+  const text = sorted.value
+    .map(cmd => `${cmd.name} - ${cmd.description}`)
+    .join('\n')
+  navigator.clipboard.writeText(text)
+  copied.value = true
+  setTimeout(() => (copied.value = false), 2500)
+}
 </script>
 
 <template>
   <div>
     <div class="mb-6">
-      <h1 class="text-xl font-semibold">Slash Commands</h1>
-      <p class="text-xs text-gray-600 mt-1">All commands and skills available to Claus in the current session.</p>
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <h1 class="text-xl font-semibold">Slash Commands</h1>
+          <p class="text-xs text-gray-600 mt-1">All commands and skills available to Claus in the current session.</p>
+        </div>
+        <button
+          v-if="sorted.length > 0"
+          :disabled="copied"
+          class="px-4 py-1.5 rounded text-sm font-medium transition-all disabled:opacity-50 border shrink-0"
+          :class="copied
+            ? 'bg-green-900/50 text-green-400 border-green-800/50'
+            : 'bg-gray-800 text-white hover:bg-gray-700 border-gray-700/50'"
+          @click="copyAllCommands"
+        >
+          {{ copied ? 'copied \u2713' : 'copy all' }}
+        </button>
+      </div>
     </div>
 
     <div v-if="commands === undefined" class="space-y-2">
