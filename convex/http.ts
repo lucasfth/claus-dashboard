@@ -47,6 +47,29 @@ const pushCommands = httpAction(async (ctx, request) => {
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } })
 })
 
+const deleteCommand = httpAction(async (ctx, request) => {
+  const err = checkSecret(request)
+  if (err) return err
+  const body = await request.json().catch(() => null)
+  if (!body?.name) return new Response(JSON.stringify({ error: 'Missing name' }), { status: 400 })
+  await ctx.runMutation(internal.commands.deleteByName, { name: body.name })
+  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+})
+
+const pushBridgetStatus = httpAction(async (ctx, request) => {
+  const err = checkSecret(request)
+  if (err) return err
+  const body = await request.json().catch(() => null)
+  if (!body) return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 })
+  await ctx.runMutation(internal.bridget.upsertStatus, {
+    lastSync: body.lastSync ?? Date.now(),
+    jobsPushed: body.jobsPushed,
+    commandsPushed: body.commandsPushed,
+    activitiesPushed: body.activitiesPushed,
+  })
+  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+})
+
 const getContext = httpAction(async (ctx, request) => {
   const err = checkSecret(request)
   if (err) return err
@@ -114,6 +137,8 @@ const http = httpRouter()
 http.route({ path: '/pushActivity', method: 'POST', handler: pushActivity })
 http.route({ path: '/pushJobs', method: 'POST', handler: pushJobs })
 http.route({ path: '/pushCommands', method: 'POST', handler: pushCommands })
+http.route({ path: '/deleteCommand', method: 'POST', handler: deleteCommand })
+http.route({ path: '/pushBridgetStatus', method: 'POST', handler: pushBridgetStatus })
 http.route({ path: '/getContext', method: 'GET', handler: getContext })
 http.route({ path: '/getJobUpdates', method: 'GET', handler: getJobUpdates })
 http.route({ path: '/clearJobUpdate', method: 'POST', handler: clearJobUpdate })

@@ -32,3 +32,16 @@ export const upsertMany = internalMutation({
     }
   },
 })
+
+export const deleteByName = internalMutation({
+  args: { name: v.string() },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query('commands')
+      .withIndex('by_name', q => q.eq('name', args.name))
+      .first()
+    if (existing) {
+      await ctx.db.delete(existing._id)
+    }
+  },
+})
