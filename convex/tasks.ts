@@ -2,27 +2,17 @@ import { internalMutation, internalQuery, mutation, query } from './_generated/s
 import { v } from 'convex/values'
 
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000
-
-function insertionSort<T extends { createdAt: number }>(tasks: T[]): T[] {
-  const sorted = [...tasks]
-  for (let i = 1; i < sorted.length; i++) {
-    const key = sorted[i]
-    let j = i - 1
-    while (j >= 0 && sorted[j].createdAt < key.createdAt) {
-      sorted[j + 1] = sorted[j]
-      j--
-    }
-    sorted[j + 1] = key
-  }
-  return sorted
-}
+const CLEANUP_BATCH_SIZE = 100
 
 export const list = query({
   args: {},
   handler: async (ctx) => {
     const cutoff = Date.now() - TWO_DAYS_MS
-    const all = await ctx.db.query('tasks').collect()
-    return insertionSort(all.filter(t => t.createdAt >= cutoff))
+    return ctx.db
+      .query('tasks')
+      .withIndex('by_createdAt', q => q.gte('createdAt', cutoff))
+      .order('desc')
+      .collect()
   },
 })
 
@@ -71,12 +61,16 @@ export const deleteOlderThanTwoDays = internalMutation({
   args: {},
   handler: async (ctx) => {
     const cutoff = Date.now() - TWO_DAYS_MS
-    const old = await ctx.db.query('tasks').collect()
+    const old = await ctx.db
+      .query('tasks')
+      .withIndex('by_createdAt', q => q.lt('createdAt', cutoff))
+      .take(CLEANUP_BATCH_SIZE)
+
     for (const task of old) {
-      if (task.createdAt < cutoff) {
-        await ctx.db.delete(task._id)
-      }
+      await ctx.db.delete(task._id)
     }
+
+    return { deletedCount: old.length }
   },
 })
 
