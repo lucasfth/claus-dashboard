@@ -8,11 +8,11 @@ export const list = query({
   args: {},
   handler: async (ctx) => {
     const cutoff = Date.now() - TWO_DAYS_MS
-    return ctx.db
+    return await ctx.db
       .query('tasks')
-      .withIndex('by_createdAt', q => q.gte('createdAt', cutoff))
+      .withIndex('by_createdAt', (q) => q.gte('createdAt', cutoff))
       .order('desc')
-      .collect()
+      .take(100)
   },
 })
 
@@ -23,9 +23,12 @@ export const create = mutation({
     runAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    const name = args.name.trim().slice(0, 100) || 'task'
+    const prompt = args.prompt.trim().slice(0, 10000)
+
     await ctx.db.insert('tasks', {
-      name: args.name.trim() || 'task',
-      prompt: args.prompt.trim(),
+      name,
+      prompt,
       runAt: args.runAt,
       status: 'pending',
       createdAt: Date.now(),
@@ -95,9 +98,12 @@ export const updateTask = mutation({
       throw new Error('Cannot edit ASAP tasks')
     }
 
+    const name = args.name.trim().slice(0, 100) || 'task'
+    const prompt = args.prompt.trim().slice(0, 10000)
+
     await ctx.db.patch(args.id, {
-      name: args.name.trim() || 'task',
-      prompt: args.prompt.trim(),
+      name,
+      prompt,
     })
   },
 })
