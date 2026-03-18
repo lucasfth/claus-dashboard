@@ -105,18 +105,24 @@ function cancelEdit() {
     <!-- Create form -->
     <div class="rounded-lg bg-gray-900/30 border border-gray-800/50 px-4 py-4 mb-6 space-y-3">
       <div class="flex gap-3">
+        <label for="task-name" class="sr-only">Task Label (optional)</label>
         <input
+          id="task-name"
           v-model="name"
           placeholder="Label (optional)"
           class="bg-gray-800/50 border border-gray-700/50 rounded px-3 py-1.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gray-500 w-40"
         />
+        <label for="task-run-at" class="sr-only">Run at</label>
         <input
+          id="task-run-at"
           v-model="runAt"
           type="datetime-local"
           class="bg-gray-800/50 border border-gray-700/50 rounded px-3 py-1.5 text-sm text-gray-300 focus:outline-none focus:border-gray-500 flex-1 [color-scheme:dark]"
         />
       </div>
+      <label for="task-prompt" class="sr-only">Task Prompt</label>
       <textarea
+        id="task-prompt"
         v-model="prompt"
         placeholder="What should Claus do?"
         rows="3"
@@ -202,10 +208,12 @@ function cancelEdit() {
           <button
             v-if="canEditTask(task)"
             class="text-xs text-gray-700 hover:text-blue-400 transition-colors"
+            aria-label="Edit task"
             @click="startEdit(task)"
           >edit</button>
           <button
             class="text-xs text-gray-700 hover:text-red-400 transition-colors"
+            aria-label="Cancel task"
             @click="cancel({ id: task._id })"
           >cancel</button>
         </div>

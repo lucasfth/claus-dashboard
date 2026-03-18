@@ -2,6 +2,7 @@ import { internalMutation, internalQuery, mutation, query } from './_generated/s
 import { v } from 'convex/values'
 
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000
+const CLEANUP_BATCH_SIZE = 100
 
 export const list = query({
   args: {},
@@ -65,12 +66,14 @@ export const deleteOlderThanTwoDays = internalMutation({
     const cutoff = Date.now() - TWO_DAYS_MS
     const old = await ctx.db
       .query('tasks')
-      .withIndex('by_createdAt', (q) => q.lt('createdAt', cutoff))
-      .take(100)
+      .withIndex('by_createdAt', q => q.lt('createdAt', cutoff))
+      .take(CLEANUP_BATCH_SIZE)
 
     for (const task of old) {
       await ctx.db.delete(task._id)
     }
+
+    return { deletedCount: old.length }
   },
 })
 
