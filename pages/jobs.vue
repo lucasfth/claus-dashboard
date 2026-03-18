@@ -103,7 +103,7 @@ const RUNNER_STYLE: Record<string, string> = {
               {{ job.pendingSchedule ? job.pendingSchedule + ' (pending)' : job.schedule }}
             </span>
             <button
-              class="opacity-0 group-hover:opacity-100 text-gray-700 hover:text-gray-400 text-xs transition-opacity"
+              class="opacity-40 group-hover:opacity-100 focus:opacity-100 outline-none focus-visible:ring-1 focus-visible:ring-gray-400 rounded px-1 text-gray-700 hover:text-gray-400 text-xs transition-opacity"
               @click="startEdit(job.name, 'schedule', job.pendingSchedule ?? job.schedule)"
             >edit</button>
           </div>
@@ -130,7 +130,7 @@ const RUNNER_STYLE: Record<string, string> = {
             </p>
             <button
               v-if="job.runner !== 'python'"
-              class="opacity-0 group-hover:opacity-100 text-gray-700 hover:text-gray-400 text-xs transition-opacity shrink-0"
+              class="opacity-40 group-hover:opacity-100 focus:opacity-100 outline-none focus-visible:ring-1 focus-visible:ring-gray-400 rounded px-1 text-gray-700 hover:text-gray-400 text-xs transition-opacity shrink-0"
               @click="startEdit(job.name, 'prompt', job.pendingPrompt ?? job.prompt)"
             >edit</button>
           </div>
