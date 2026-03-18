@@ -21,7 +21,7 @@ async function signOut() {
     <nav v-if="loggedIn" class="border-b border-gray-800 sticky top-0 z-10 bg-[#0a0a0a]">
       <div class="w-full max-w-4xl mx-auto px-4 py-2 sm:h-14 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div class="flex items-center gap-4 min-w-0">
-          <span class="font-semibold text-sm tracking-wide shrink-0">&#x26A1; claus</span>
+          <span class="font-semibold text-sm tracking-wide shrink-0">&#x26A1; Claus</span>
           <div class="flex items-center gap-4 min-w-0 overflow-x-auto">
             <NuxtLink
               v-for="link in nav"
