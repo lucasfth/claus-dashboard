@@ -11,8 +11,7 @@ export const getStatus = query({
 export const getScheduledJobs = query({
   args: {},
   handler: async (ctx) => {
-    const all = await ctx.db.query('jobs').collect()
-    return all.filter(j => j.runner === 'python')
+    return ctx.db.query('jobs').collect()
   },
 })
 
