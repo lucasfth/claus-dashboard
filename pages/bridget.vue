@@ -4,7 +4,7 @@ import { api } from '~/convex/_generated/api'
 const status = useConvexQuery(api.bridget.getStatus, {})
 const scheduledJobs = useConvexQuery(api.bridget.getScheduledJobs, {})
 
-const selectedJob = ref<{ name: string; prompt: string } | null>(null)
+const selectedJob = ref<{ name: string; content: string } | null>(null)
 
 function relativeTime(ts: number) {
   const diff = Date.now() - ts
@@ -35,7 +35,7 @@ function formatJobName(name: string) {
 
 type Label = { text: string; style: string }
 
-function getLabels(job: { runner?: string; prompt?: string }): Label[] {
+function getLabels(job: { runner?: string; prompt?: string; code?: string }): Label[] {
   const labels: Label[] = []
   const runner = job.runner ?? 'python'
   const cmd = job.prompt ?? ''
@@ -50,6 +50,13 @@ function getLabels(job: { runner?: string; prompt?: string }): Label[] {
     labels.push({ text: 'ollama', style: 'bg-green-900/50 text-green-300 border-green-800/50' })
   }
   return labels
+}
+
+function openPreview(job: { name: string; code?: string; prompt?: string }) {
+  selectedJob.value = {
+    name: job.name,
+    content: job.code ?? job.prompt ?? '',
+  }
 }
 </script>
 
@@ -106,7 +113,7 @@ function getLabels(job: { runner?: string; prompt?: string }): Label[] {
             <span class="text-xs text-gray-600">{{ formatCron(job.schedule) }}</span>
             <button
               class="text-xs px-2 py-0.5 rounded border border-gray-700 text-gray-400 hover:text-white hover:border-gray-500 transition-colors font-mono"
-              @click="selectedJob = { name: job.name, prompt: job.prompt ?? '' }"
+              @click="openPreview(job)"
             >view</button>
           </div>
         </div>
@@ -119,15 +126,14 @@ function getLabels(job: { runner?: string; prompt?: string }): Label[] {
       <div
         v-if="selectedJob"
         class="fixed inset-0 z-50 flex items-center justify-center p-4"
-        @click.self="selectedJob = null"
       >
         <div class="absolute inset-0 bg-black/60" @click="selectedJob = null" />
-        <div class="relative bg-gray-950 border border-gray-800 rounded-xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl">
+        <div class="relative bg-gray-950 border border-gray-800 rounded-xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl">
           <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800 shrink-0">
             <span class="text-sm font-medium">{{ formatJobName(selectedJob.name) }}</span>
             <button class="text-gray-500 hover:text-white text-lg leading-none" @click="selectedJob = null">&times;</button>
           </div>
-          <pre class="p-4 text-xs text-gray-300 overflow-auto font-mono leading-relaxed whitespace-pre-wrap">{{ selectedJob.prompt }}</pre>
+          <pre class="p-4 text-xs text-gray-300 overflow-auto font-mono leading-relaxed">{{ selectedJob.content }}</pre>
         </div>
       </div>
     </Teleport>
