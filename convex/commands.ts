@@ -8,7 +8,7 @@ export const list = query({
   },
 })
 
-export const upsertMany = internalMutation({
+export const replaceAll = internalMutation({
   args: {
     commands: v.array(
       v.object({
@@ -19,17 +19,12 @@ export const upsertMany = internalMutation({
     ),
   },
   handler: async (ctx, args) => {
-    for (const cmd of args.commands) {
-      const existing = await ctx.db
-        .query('commands')
-        .withIndex('by_name', q => q.eq('name', cmd.name))
-        .first()
-      if (existing) {
-        await ctx.db.patch(existing._id, { description: cmd.description, updatedAt: Date.now() })
-      } else {
-        await ctx.db.insert('commands', { ...cmd, updatedAt: Date.now() })
-      }
-    }
+    // Delete all existing commands first
+    const existing = await ctx.db.query('commands').collect()
+    await Promise.all(existing.map(cmd => ctx.db.delete(cmd._id)))
+    // Insert the new set
+    const now = Date.now()
+    await Promise.all(args.commands.map(cmd => ctx.db.insert('commands', { ...cmd, updatedAt: now })))
   },
 })
 
