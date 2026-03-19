@@ -19,10 +19,19 @@ const CRON_LABELS: Record<string, string> = {
   '45 5 * * *': 'daily at 05:45',
   '0 23 * * *': 'daily at 23:00',
   '0 4 * * 0': 'weekly Sun at 04:00',
+  '0 19 * * 0': 'weekly Sun at 19:00',
+  '30 17 * * 1-5': 'weekdays at 17:30',
 }
 
 function formatCron(cron: string) {
   return CRON_LABELS[cron] ?? cron
+}
+
+function formatJobName(name: string) {
+  return name
+    .split('-')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
 }
 </script>
 
@@ -61,7 +70,8 @@ function formatCron(cron: string) {
         class="border border-gray-800 rounded-lg p-3 flex items-start justify-between gap-4"
       >
         <div class="min-w-0">
-          <div class="text-sm font-mono">{{ job.name }}</div>
+          <div class="text-sm font-medium">{{ formatJobName(job.name) }}</div>
+          <div class="text-xs text-gray-600 font-mono mt-0.5">{{ job.name }}</div>
           <div class="text-xs text-gray-500 mt-1 truncate max-w-xs">{{ job.prompt }}</div>
         </div>
         <div class="text-xs text-gray-600 shrink-0 text-right">{{ formatCron(job.schedule) }}</div>
