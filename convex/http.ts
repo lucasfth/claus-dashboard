@@ -43,7 +43,7 @@ const pushCommands = httpAction(async (ctx, request) => {
   if (err) return err
   const body = await request.json().catch(() => null)
   if (!Array.isArray(body)) return new Response(JSON.stringify({ error: 'Expected array' }), { status: 400 })
-  await ctx.runMutation(internal.commands.upsertMany, { commands: body })
+  await ctx.runMutation(internal.commands.replaceAll, { commands: body })
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } })
 })
 
