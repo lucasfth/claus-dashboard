@@ -33,16 +33,24 @@ function formatDate(ts: number) {
   })
 }
 
-const CRON_LABELS: Record<string, string> = {
-  '45 5 * * *': 'daily 05:45',
-  '0 23 * * *': 'daily 23:00',
-  '0 4 * * 0': 'Sun 04:00',
-  '0 19 * * 0': 'Sun 19:00',
-  '30 17 * * 1-5': 'weekdays 17:30',
+const DOW_NAMES: Record<string, string> = {
+  '0': 'Sun', '1': 'Mon', '2': 'Tue', '3': 'Wed', '4': 'Thu', '5': 'Fri', '6': 'Sat',
 }
 
-function formatCron(cron: string) {
-  return CRON_LABELS[cron] ?? cron
+function formatCron(cron: string): string {
+  const parts = cron.trim().split(/\s+/)
+  if (parts.length !== 5) return cron
+  const [min, hour, dom, month, dow] = parts
+  if (dom !== '*' || month !== '*') return cron
+  const h = parseInt(hour)
+  const m = parseInt(min)
+  if (isNaN(h) || isNaN(m)) return cron
+  const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+  if (dow === '*') return `daily ${time}`
+  if (dow === '1-5') return `weekdays ${time}`
+  if (dow === '0,6' || dow === '6,0') return `weekends ${time}`
+  if (DOW_NAMES[dow]) return `${DOW_NAMES[dow]} ${time}`
+  return cron
 }
 
 function formatJobName(name: string) {
@@ -180,7 +188,7 @@ function isEditing(name: string, field: EditField) {
           </div>
           <div v-else class="flex items-center gap-2">
             <span class="text-xs font-mono" :class="job.pendingSchedule ? 'text-yellow-400' : 'text-gray-600'">
-              {{ job.pendingSchedule ? job.pendingSchedule + ' (pending)' : formatCron(job.schedule) }}
+              {{ job.pendingSchedule ? formatCron(job.pendingSchedule) + ' (pending)' : formatCron(job.schedule) }}
             </span>
             <button
               class="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-gray-400 text-xs transition-opacity"
