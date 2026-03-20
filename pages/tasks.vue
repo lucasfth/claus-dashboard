@@ -17,6 +17,7 @@ const created = ref(false)
 const editingId = ref<string | null>(null)
 const editName = ref('')
 const editPrompt = ref('')
+const editRunAt = ref('')
 const editing = ref(false)
 
 const confirmingCancelId = ref<string | null>(null)
@@ -59,17 +60,23 @@ function formatRunAt(ts: number): string {
   })
 }
 
+function toDatetimeLocal(ts: number): string {
+  const d = new Date(ts)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 function canEditTask(task: any): boolean {
   if (task.status !== 'pending') return false
   if (!task.runAt) return false
-  const THIRTY_MINUTES_MS = 30 * 60 * 1000
-  return task.runAt - Date.now() >= THIRTY_MINUTES_MS
+  return task.runAt - Date.now() >= 30 * 60 * 1000
 }
 
 function startEdit(task: any) {
   editingId.value = task._id
   editName.value = task.name
   editPrompt.value = task.prompt
+  editRunAt.value = task.runAt ? toDatetimeLocal(task.runAt) : ''
 }
 
 async function saveEdit() {
@@ -80,6 +87,7 @@ async function saveEdit() {
       id: editingId.value,
       name: editName.value,
       prompt: editPrompt.value,
+      runAt: editRunAt.value ? new Date(editRunAt.value).getTime() : undefined,
     })
     editingId.value = null
   } finally {
@@ -91,6 +99,7 @@ function cancelEdit() {
   editingId.value = null
   editName.value = ''
   editPrompt.value = ''
+  editRunAt.value = ''
 }
 
 async function handleCancel(id: string) {
@@ -150,7 +159,7 @@ async function handleCancel(id: string) {
         @keydown.ctrl.enter="submit"
       />
       <div class="flex items-center justify-between">
-        <span class="text-xs text-gray-700">⌘↵ to queue &middot; no time = ASAP</span>
+        <span class="text-xs text-gray-700">&#8984;&#8629; to queue &middot; no time = ASAP</span>
         <button
           :disabled="creating || !prompt.trim()"
           class="px-4 py-1.5 rounded text-sm font-medium transition-all disabled:opacity-50 border"
@@ -181,14 +190,21 @@ async function handleCancel(id: string) {
           class="inline-block text-xs px-2 py-0.5 rounded font-mono border shrink-0 mt-0.5"
           :class="STATUS_STYLE[task.status]"
         >{{ task.status }}</span>
-        
+
         <div v-if="editingId === task._id" class="flex-1 min-w-0 space-y-2">
-          <input
-            v-model="editName"
-            type="text"
-            placeholder="Label"
-            class="w-full bg-gray-800/50 border border-gray-700/50 rounded px-3 py-1.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gray-500"
-          />
+          <div class="flex gap-2">
+            <input
+              v-model="editName"
+              type="text"
+              placeholder="Label"
+              class="flex-1 bg-gray-800/50 border border-gray-700/50 rounded px-3 py-1.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gray-500"
+            />
+            <input
+              v-model="editRunAt"
+              type="datetime-local"
+              class="bg-gray-800/50 border border-gray-700/50 rounded px-3 py-1.5 text-sm text-gray-300 focus:outline-none focus:border-gray-500 [color-scheme:dark]"
+            />
+          </div>
           <textarea
             v-model="editPrompt"
             placeholder="What should Claus do?"
@@ -208,7 +224,7 @@ async function handleCancel(id: string) {
               class="px-3 py-1.5 rounded text-sm font-medium transition-all disabled:opacity-50 border bg-gray-800 text-gray-300 border-gray-700/50 hover:bg-gray-700"
               @click="cancelEdit"
             >
-              cancel
+              cancel"
             </button>
           </div>
         </div>
@@ -216,7 +232,7 @@ async function handleCancel(id: string) {
         <div v-else class="flex-1 min-w-0">
           <div class="flex items-baseline gap-2">
             <span class="text-sm text-white font-medium">{{ task.name }}</span>
-            <span v-if="task.runAt" class="text-xs text-gray-600">⏰ {{ formatRunAt(task.runAt) }}</span>
+            <span v-if="task.runAt" class="text-xs text-gray-600">&#9200; {{ formatRunAt(task.runAt) }}</span>
             <span v-else class="text-xs text-gray-700">ASAP</span>
           </div>
           <p class="text-xs text-gray-500 font-mono mt-1 leading-relaxed">{{ task.prompt }}</p>

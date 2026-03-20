@@ -106,6 +106,7 @@ export const updateTask = mutation({
     id: v.id('tasks'),
     name: v.string(),
     prompt: v.string(),
+    runAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const task = await ctx.db.get(args.id)
@@ -113,21 +114,21 @@ export const updateTask = mutation({
     if (task.status !== 'pending') throw new Error('Can only edit pending tasks')
 
     const THIRTY_MINUTES_MS = 30 * 60 * 1000
-    if (task.runAt) {
-      const timeUntilRun = task.runAt - Date.now()
+    const effectiveRunAt = args.runAt ?? task.runAt
+    if (effectiveRunAt) {
+      const timeUntilRun = effectiveRunAt - Date.now()
       if (timeUntilRun < THIRTY_MINUTES_MS) {
-        throw new Error('Can only edit tasks scheduled more than 30 minutes away')
+        throw new Error('Scheduled time must be at least 30 minutes in the future')
       }
-    } else {
+    } else if (!task.runAt) {
       throw new Error('Cannot edit ASAP tasks')
     }
 
     const name = args.name.trim().slice(0, 100) || 'task'
     const prompt = args.prompt.trim().slice(0, 10000)
+    const patch: Record<string, unknown> = { name, prompt }
+    if (args.runAt !== undefined) patch.runAt = args.runAt
 
-    await ctx.db.patch(args.id, {
-      name,
-      prompt,
-    })
+    await ctx.db.patch(args.id, patch)
   },
 })
