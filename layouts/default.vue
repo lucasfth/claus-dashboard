@@ -5,7 +5,6 @@ const { loggedIn, clear } = useUserSession()
 const nav = [
   { href: '/feed', label: 'Feed' },
   { href: '/bridget', label: 'Bridget' },
-  { href: '/jobs', label: 'Jobs' },
   { href: '/commands', label: 'Commands' },
   { href: '/tasks', label: 'Tasks' },
 ]
