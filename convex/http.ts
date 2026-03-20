@@ -47,6 +47,13 @@ const pushCommands = httpAction(async (ctx, request) => {
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } })
 })
 
+const getCommands = httpAction(async (ctx, request) => {
+  const err = checkSecret(request)
+  if (err) return err
+  const commands = await ctx.runQuery(internal.commands.listInternal, {})
+  return new Response(JSON.stringify(commands), { status: 200, headers: { 'Content-Type': 'application/json' } })
+})
+
 const deleteCommand = httpAction(async (ctx, request) => {
   const err = checkSecret(request)
   if (err) return err
@@ -137,6 +144,7 @@ const http = httpRouter()
 http.route({ path: '/pushActivity', method: 'POST', handler: pushActivity })
 http.route({ path: '/pushJobs', method: 'POST', handler: pushJobs })
 http.route({ path: '/pushCommands', method: 'POST', handler: pushCommands })
+http.route({ path: '/getCommands', method: 'GET', handler: getCommands })
 http.route({ path: '/deleteCommand', method: 'POST', handler: deleteCommand })
 http.route({ path: '/pushBridgetStatus', method: 'POST', handler: pushBridgetStatus })
 http.route({ path: '/getContext', method: 'GET', handler: getContext })
