@@ -8,11 +8,28 @@ export const list = query({
   args: {},
   handler: async (ctx) => {
     const cutoff = Date.now() - TWO_DAYS_MS
-    return await ctx.db
+
+    // All pending tasks regardless of age (includes far-future scheduled ones)
+    const pending = await ctx.db
+      .query('tasks')
+      .withIndex('by_status', (q) => q.eq('status', 'pending'))
+      .collect()
+
+    // Recent done/cancelled tasks for history
+    const recent = await ctx.db
       .query('tasks')
       .withIndex('by_createdAt', (q) => q.gte('createdAt', cutoff))
       .order('desc')
       .take(100)
+    const recentNonPending = recent.filter((t) => t.status !== 'pending')
+
+    // Merge, deduplicate, sort by createdAt desc
+    const seen = new Set(pending.map((t) => t._id))
+    const combined = [...pending]
+    for (const t of recentNonPending) {
+      if (!seen.has(t._id)) combined.push(t)
+    }
+    return combined.sort((a, b) => b.createdAt - a.createdAt).slice(0, 100)
   },
 })
 
@@ -64,16 +81,23 @@ export const deleteOlderThanTwoDays = internalMutation({
   args: {},
   handler: async (ctx) => {
     const cutoff = Date.now() - TWO_DAYS_MS
+    const now = Date.now()
+
     const old = await ctx.db
       .query('tasks')
       .withIndex('by_createdAt', q => q.lt('createdAt', cutoff))
       .take(CLEANUP_BATCH_SIZE)
 
-    for (const task of old) {
+    // Never delete pending tasks that are still scheduled in the future
+    const toDelete = old.filter(
+      (t) => t.status !== 'pending' || !t.runAt || t.runAt <= now
+    )
+
+    for (const task of toDelete) {
       await ctx.db.delete(task._id)
     }
 
-    return { deletedCount: old.length }
+    return { deletedCount: toDelete.length }
   },
 })
 
