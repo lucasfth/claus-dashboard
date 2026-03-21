@@ -2,7 +2,7 @@
 definePageMeta({ middleware: 'auth' })
 
 onMounted(() => {
-  navigateTo('/feed')
+  navigateTo('/tasks')
 })
 </script>
 <template class="bg-black"><div /></template>
