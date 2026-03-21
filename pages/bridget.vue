@@ -197,7 +197,7 @@ function isEditing(name: string, field: EditField) {
               {{ job.pendingSchedule ? formatCron(job.pendingSchedule) + ' (pending)' : formatCron(job.schedule) }}
             </span>
             <button
-              class="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-gray-400 text-xs transition-opacity"
+              class="opacity-40 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-gray-500 outline-none text-gray-600 hover:text-gray-400 text-xs transition-opacity rounded px-0.5"
               @click="startEdit(job.name, 'schedule', job.pendingSchedule ?? job.schedule)"
             >edit</button>
           </div>
@@ -222,7 +222,7 @@ function isEditing(name: string, field: EditField) {
               {{ job.pendingPrompt ? job.pendingPrompt + ' (pending)' : job.prompt }}
             </p>
             <button
-              class="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-gray-400 text-xs transition-opacity shrink-0"
+              class="opacity-40 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-gray-500 outline-none text-gray-600 hover:text-gray-400 text-xs transition-opacity shrink-0 rounded px-0.5"
               @click="startEdit(job.name, 'prompt', job.pendingPrompt ?? job.prompt)"
             >edit</button>
           </div>
