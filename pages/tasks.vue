@@ -224,7 +224,7 @@ async function handleCancel(id: string) {
               class="px-3 py-1.5 rounded text-sm font-medium transition-all disabled:opacity-50 border bg-gray-800 text-gray-300 border-gray-700/50 hover:bg-gray-700"
               @click="cancelEdit"
             >
-              cancel"
+              cancel
             </button>
           </div>
         </div>
