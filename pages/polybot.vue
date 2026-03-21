@@ -5,6 +5,7 @@ definePageMeta({ middleware: 'auth' })
 
 const runs = useConvexQuery(api.polybot.listRuns, {})
 const topMarkets = useConvexQuery(api.polybot.latestTopMarkets, {})
+const trades = useConvexQuery(api.polybot.listTrades, {})
 
 function relativeTime(ts: number): string {
   const diff = Date.now() - ts
@@ -81,7 +82,7 @@ function imbalanceColor(v: number | undefined): string {
       <div class="rounded-lg bg-gray-900/30 border border-gray-800/50 px-4 py-3">
         <p class="text-xs text-gray-600 mb-1">Last run</p>
         <p class="text-sm font-medium truncate">
-          {{ stats?.lastRun ? relativeTime(stats.lastRun.startedAt) : '\u2014' }}
+          {{ stats?.lastRun ? relativeTime(stats.lastRun.startedAt * 1000) : '\u2014' }}
         </p>
       </div>
     </div>
@@ -141,6 +142,46 @@ function imbalanceColor(v: number | undefined): string {
       </div>
     </div>
 
+    <!-- Dry-run trade log -->
+    <div class="mb-6">
+      <h2 class="text-sm font-medium text-gray-400 mb-3">Dry-run trade log</h2>
+
+      <div v-if="trades === undefined" class="space-y-2">
+        <div v-for="i in 3" :key="i" class="h-10 rounded-lg bg-gray-900/50 animate-pulse" />
+      </div>
+
+      <p v-else-if="trades.length === 0" class="text-gray-600 text-sm">No trades yet.</p>
+
+      <div v-else class="rounded-lg bg-gray-900/30 border border-gray-800/50 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-800/50">
+              <th class="text-left px-4 py-2 text-xs text-gray-600 font-medium">Market</th>
+              <th class="text-right px-4 py-2 text-xs text-gray-600 font-medium">Side</th>
+              <th class="text-right px-4 py-2 text-xs text-gray-600 font-medium">Size</th>
+              <th class="text-right px-4 py-2 text-xs text-gray-600 font-medium">When</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="t in trades"
+              :key="t._id"
+              class="border-b border-gray-800/30 last:border-0"
+            >
+              <td class="px-4 py-2.5 text-xs text-gray-300 truncate max-w-0 w-full">
+                <span :title="t.marketQuestion ?? t.marketId">{{ (t.marketQuestion ?? t.marketId).slice(0, 60) }}{{ (t.marketQuestion ?? t.marketId).length > 60 ? '\u2026' : '' }}</span>
+              </td>
+              <td class="px-4 py-2.5 text-xs font-mono text-right whitespace-nowrap">
+                <span :class="t.side.toLowerCase().includes('yes') || t.side === 'buy' ? 'text-green-400' : 'text-gray-400'">{{ t.side }}</span>
+              </td>
+              <td class="px-4 py-2.5 text-xs font-mono text-right whitespace-nowrap text-gray-400">${{ t.sizeUsd.toFixed(2) }}</td>
+              <td class="px-4 py-2.5 text-xs text-gray-600 text-right whitespace-nowrap">{{ relativeTime(t.timestamp * 1000) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- Recent runs -->
     <div>
       <h2 class="text-sm font-medium text-gray-400 mb-3">Recent runs</h2>
@@ -167,7 +208,7 @@ function imbalanceColor(v: number | undefined): string {
           <div class="flex-1 min-w-0">
             <div class="flex items-baseline gap-2">
               <span class="text-xs font-mono text-gray-400">{{ shortRunId(run.runId) }}</span>
-              <span class="text-xs text-gray-600">{{ relativeTime(run.startedAt) }}</span>
+              <span class="text-xs text-gray-600">{{ relativeTime(run.startedAt * 1000) }}</span>
             </div>
             <div class="flex gap-4 mt-0.5">
               <span class="text-xs text-gray-600">{{ run.totalMarkets }} markets</span>
@@ -177,7 +218,7 @@ function imbalanceColor(v: number | undefined): string {
           </div>
 
           <span class="text-xs text-gray-700 shrink-0">
-            {{ Math.round((run.finishedAt - run.startedAt) / 1000) }}s
+            {{ Math.round((run.finishedAt - run.startedAt)) }}s
           </span>
         </div>
       </div>

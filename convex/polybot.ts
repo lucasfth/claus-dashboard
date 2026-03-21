@@ -28,6 +28,16 @@ export const latestTopMarkets = query({
   },
 })
 
+export const listTrades = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query('polybotTrades')
+      .withIndex('by_timestamp')
+      .order('desc')
+      .take(50)
+  },
+})
+
 // Internal mutation called from HTTP action
 export const upsertRun = internalMutation({
   args: {
@@ -48,6 +58,15 @@ export const upsertRun = internalMutation({
       spikeFactor: v.optional(v.number()),
       largeTrades: v.optional(v.number()),
     })),
+    trades: v.optional(v.array(v.object({
+      marketId: v.string(),
+      marketQuestion: v.optional(v.string()),
+      side: v.string(),
+      price: v.number(),
+      sizeUsd: v.number(),
+      timestamp: v.number(),
+      success: v.boolean(),
+    }))),
   },
   handler: async (ctx, args) => {
     // Upsert the run
@@ -83,6 +102,28 @@ export const upsertRun = internalMutation({
           spikeFactor: m.spikeFactor,
           largeTrades: m.largeTrades,
         })
+      }
+      // Insert trades for this run
+      for (const t of (args.trades ?? [])) {
+        // Avoid duplicate trade records
+        const existingTrade = await ctx.db.query('polybotTrades')
+          .filter(q => q.and(
+            q.eq(q.field('runId'), args.runId),
+            q.eq(q.field('marketId'), t.marketId),
+          ))
+          .first()
+        if (!existingTrade) {
+          await ctx.db.insert('polybotTrades', {
+            runId: args.runId,
+            marketId: t.marketId,
+            marketQuestion: t.marketQuestion,
+            side: t.side,
+            price: t.price,
+            sizeUsd: t.sizeUsd,
+            timestamp: t.timestamp,
+            success: t.success,
+          })
+        }
       }
     }
   },

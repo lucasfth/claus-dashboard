@@ -82,4 +82,15 @@ export default defineSchema({
     spikeFactor: v.optional(v.number()),
     largeTrades: v.optional(v.number()),
   }).index('by_runId', ['runId']).index('by_score', ['score']),
+
+  polybotTrades: defineTable({
+    runId: v.string(),
+    marketId: v.string(),
+    marketQuestion: v.optional(v.string()),
+    side: v.string(),
+    price: v.number(),
+    sizeUsd: v.number(),
+    timestamp: v.number(),
+    success: v.boolean(),
+  }).index('by_runId', ['runId']).index('by_timestamp', ['timestamp']),
 })
