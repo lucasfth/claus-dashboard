@@ -81,6 +81,7 @@ export default defineSchema({
     imbalance: v.optional(v.number()),
     spikeFactor: v.optional(v.number()),
     largeTrades: v.optional(v.number()),
+    annotations: v.optional(v.array(v.string())),
   }).index('by_runId', ['runId']).index('by_score', ['score']),
 
   polybotTrades: defineTable({

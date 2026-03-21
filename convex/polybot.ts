@@ -57,6 +57,7 @@ export const upsertRun = internalMutation({
       imbalance: v.optional(v.number()),
       spikeFactor: v.optional(v.number()),
       largeTrades: v.optional(v.number()),
+      annotations: v.optional(v.array(v.string())),
     })),
     trades: v.optional(v.array(v.object({
       marketId: v.string(),
@@ -101,6 +102,7 @@ export const upsertRun = internalMutation({
           imbalance: m.imbalance,
           spikeFactor: m.spikeFactor,
           largeTrades: m.largeTrades,
+          annotations: m.annotations,
         })
       }
       // Insert trades for this run

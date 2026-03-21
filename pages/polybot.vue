@@ -53,6 +53,17 @@ function imbalanceColor(v: number | undefined): string {
   if (v < -0.15) return 'text-red-500'
   return 'text-gray-500'
 }
+
+function annotationStyle(ann: string): string {
+  if (ann.includes('divergence') || ann.includes('reversal')) return 'bg-red-900/40 text-red-400 border-red-800/40'
+  if (ann.includes('top trader')) return 'bg-purple-900/40 text-purple-300 border-purple-800/40'
+  if (ann.includes('spike')) return 'bg-orange-900/40 text-orange-400 border-orange-800/40'
+  if (ann.includes('VWAP')) return 'bg-blue-900/40 text-blue-300 border-blue-800/40'
+  if (ann.includes('buy pressure')) return 'bg-green-900/40 text-green-400 border-green-800/40'
+  if (ann.includes('sell pressure')) return 'bg-red-900/40 text-red-400 border-red-800/40'
+  if (ann.includes('large trade')) return 'bg-yellow-900/40 text-yellow-400 border-yellow-800/40'
+  return 'bg-gray-800/60 text-gray-400 border-gray-700/40'
+}
 </script>
 
 <template>
@@ -108,35 +119,46 @@ function imbalanceColor(v: number | undefined): string {
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="m in topMarkets"
-              :key="m._id"
-              class="border-b border-gray-800/30 last:border-0"
-            >
-              <td class="px-4 py-2.5 text-xs text-gray-300 truncate max-w-0 w-full">
-                <span :title="m.marketQuestion">{{ m.marketQuestion.length > 70 ? m.marketQuestion.slice(0, 70) + '\u2026' : m.marketQuestion }}</span>
-              </td>
-              <td class="px-4 py-2.5 text-xs font-mono whitespace-nowrap" :class="imbalanceColor(m.imbalance)">
-                {{ imbalanceLabel(m.imbalance) }}
-              </td>
-              <td class="px-4 py-2.5 text-xs font-mono text-right whitespace-nowrap">
-                <span v-if="m.spikeFactor != null" :class="m.spikeFactor > 1.5 ? 'text-orange-400' : 'text-gray-600'">
-                  {{ m.spikeFactor.toFixed(1) }}x
-                </span>
-                <span v-else class="text-gray-700">\u2014</span>
-              </td>
-              <td class="px-4 py-2.5 w-32">
-                <div class="flex items-center gap-2 justify-end">
-                  <span :class="['text-xs font-mono', scoreTextColor(m.score)]">{{ m.score.toFixed(2) }}</span>
-                  <div class="w-16 h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                    <div
-                      :class="['h-full rounded-full', scoreColor(m.score)]"
-                      :style="{ width: `${Math.min(m.score * 100, 100)}%` }"
-                    />
+            <template v-for="m in topMarkets" :key="m._id">
+              <tr class="border-b border-gray-800/20">
+                <td class="px-4 pt-2.5 pb-1 text-xs text-gray-300 truncate max-w-0 w-full">
+                  <span :title="m.marketQuestion">{{ m.marketQuestion.length > 70 ? m.marketQuestion.slice(0, 70) + '\u2026' : m.marketQuestion }}</span>
+                </td>
+                <td class="px-4 pt-2.5 pb-1 text-xs font-mono whitespace-nowrap" :class="imbalanceColor(m.imbalance)">
+                  {{ imbalanceLabel(m.imbalance) }}
+                </td>
+                <td class="px-4 pt-2.5 pb-1 text-xs font-mono text-right whitespace-nowrap">
+                  <span v-if="m.spikeFactor != null" :class="m.spikeFactor > 1.5 ? 'text-orange-400' : 'text-gray-600'">
+                    {{ m.spikeFactor.toFixed(1) }}x
+                  </span>
+                  <span v-else class="text-gray-700">\u2014</span>
+                </td>
+                <td class="px-4 pt-2.5 pb-1 w-32">
+                  <div class="flex items-center gap-2 justify-end">
+                    <span :class="['text-xs font-mono', scoreTextColor(m.score)]">{{ m.score.toFixed(2) }}</span>
+                    <div class="w-16 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                      <div
+                        :class="['h-full rounded-full', scoreColor(m.score)]"
+                        :style="{ width: `${Math.min(m.score * 100, 100)}%` }"
+                      />
+                    </div>
                   </div>
-                </div>
-              </td>
-            </tr>
+                </td>
+              </tr>
+              <!-- Annotations row -->
+              <tr v-if="m.annotations && m.annotations.length > 0" class="border-b border-gray-800/30 last:border-0">
+                <td colspan="4" class="px-4 pb-2.5">
+                  <div class="flex flex-wrap gap-1">
+                    <span
+                      v-for="ann in m.annotations"
+                      :key="ann"
+                      :class="['text-xs px-2 py-0.5 rounded border', annotationStyle(ann)]"
+                    >{{ ann }}</span>
+                  </div>
+                </td>
+              </tr>
+              <tr v-else class="border-b border-gray-800/30 last:border-0"><td colspan="4" class="pb-1" /></tr>
+            </template>
           </tbody>
         </table>
       </div>
