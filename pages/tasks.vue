@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import { api } from '~/convex/_generated/api'
+import type { Id } from '~/convex/_generated/dataModel'
 
 definePageMeta({ middleware: 'auth' })
 
 const tasks = useConvexQuery(api.tasks.list, {})
+const sortedTasks = computed(() => {
+  if (!tasks.value) return []
+  return [...tasks.value].sort((a, b) => {
+    const aTime = a.runAt ?? a.createdAt
+    const bTime = b.runAt ?? b.createdAt
+    return bTime - aTime
+  })
+})
+
 const create = useConvexMutation(api.tasks.create)
 const cancel = useConvexMutation(api.tasks.cancel)
 const update = useConvexMutation(api.tasks.updateTask)
@@ -14,13 +24,13 @@ const runAt = ref('')
 const creating = ref(false)
 const created = ref(false)
 
-const editingId = ref<string | null>(null)
+const editingId = ref<Id<'tasks'> | null>(null)
 const editName = ref('')
 const editPrompt = ref('')
 const editRunAt = ref('')
 const editing = ref(false)
 
-const confirmingCancelId = ref<string | null>(null)
+const confirmingCancelId = ref<Id<'tasks'> | null>(null)
 const cancelling = ref(false)
 
 const STATUS_STYLE: Record<string, string> = {
@@ -102,7 +112,7 @@ function cancelEdit() {
   editRunAt.value = ''
 }
 
-async function handleCancel(id: string) {
+async function handleCancel(id: Id<'tasks'>) {
   if (confirmingCancelId.value !== id) {
     confirmingCancelId.value = id
     return
@@ -182,7 +192,7 @@ async function handleCancel(id: string) {
 
     <div v-else class="space-y-2">
       <div
-        v-for="task in tasks"
+        v-for="task in sortedTasks"
         :key="task._id"
         class="flex items-start gap-3 px-4 py-3 rounded-lg bg-gray-900/30 border border-gray-800/50"
       >
