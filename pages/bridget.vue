@@ -41,6 +41,12 @@ function formatCron(cron: string): string {
   const parts = cron.trim().split(/\s+/)
   if (parts.length !== 5) return cron
   const [min, hour, dom, month, dow] = parts
+  
+  if (min.startsWith('*/') && hour === '*' && dom === '*' && month === '*' && dow === '*') {
+    const interval = min.split('/')[1];
+    return `every ${interval} mins`;
+  }
+  
   if (dom !== '*' || month !== '*') return cron
   const h = parseInt(hour)
   const m = parseInt(min)
