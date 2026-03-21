@@ -15,7 +15,7 @@ function relativeTime(ts: number): string {
 }
 
 function shortRunId(id: string): string {
-  return id.length > 12 ? id.slice(0, 12) + '…' : id
+  return id.length > 12 ? id.slice(0, 12) + '\u2026' : id
 }
 
 const stats = computed(() => {
@@ -37,6 +37,20 @@ function scoreTextColor(score: number): string {
   if (score >= 0.7) return 'text-green-400'
   if (score >= 0.4) return 'text-yellow-400'
   return 'text-red-400'
+}
+
+function imbalanceLabel(v: number | undefined): string {
+  if (v == null) return ''
+  if (v > 0.15) return '\u25b2 buy'
+  if (v < -0.15) return '\u25bc sell'
+  return '\u2014 neutral'
+}
+
+function imbalanceColor(v: number | undefined): string {
+  if (v == null) return 'text-gray-600'
+  if (v > 0.15) return 'text-green-500'
+  if (v < -0.15) return 'text-red-500'
+  return 'text-gray-500'
 }
 </script>
 
@@ -67,7 +81,7 @@ function scoreTextColor(score: number): string {
       <div class="rounded-lg bg-gray-900/30 border border-gray-800/50 px-4 py-3">
         <p class="text-xs text-gray-600 mb-1">Last run</p>
         <p class="text-sm font-medium truncate">
-          {{ stats?.lastRun ? relativeTime(stats.lastRun.startedAt) : '—' }}
+          {{ stats?.lastRun ? relativeTime(stats.lastRun.startedAt) : '\u2014' }}
         </p>
       </div>
     </div>
@@ -87,6 +101,8 @@ function scoreTextColor(score: number): string {
           <thead>
             <tr class="border-b border-gray-800/50">
               <th class="text-left px-4 py-2 text-xs text-gray-600 font-medium">Market</th>
+              <th class="text-right px-4 py-2 text-xs text-gray-600 font-medium">Imbalance</th>
+              <th class="text-right px-4 py-2 text-xs text-gray-600 font-medium">Spike</th>
               <th class="text-right px-4 py-2 text-xs text-gray-600 font-medium w-32">Score</th>
             </tr>
           </thead>
@@ -97,7 +113,16 @@ function scoreTextColor(score: number): string {
               class="border-b border-gray-800/30 last:border-0"
             >
               <td class="px-4 py-2.5 text-xs text-gray-300 truncate max-w-0 w-full">
-                <span :title="m.marketQuestion">{{ m.marketQuestion.length > 80 ? m.marketQuestion.slice(0, 80) + '…' : m.marketQuestion }}</span>
+                <span :title="m.marketQuestion">{{ m.marketQuestion.length > 70 ? m.marketQuestion.slice(0, 70) + '\u2026' : m.marketQuestion }}</span>
+              </td>
+              <td class="px-4 py-2.5 text-xs font-mono whitespace-nowrap" :class="imbalanceColor(m.imbalance)">
+                {{ imbalanceLabel(m.imbalance) }}
+              </td>
+              <td class="px-4 py-2.5 text-xs font-mono text-right whitespace-nowrap">
+                <span v-if="m.spikeFactor != null" :class="m.spikeFactor > 1.5 ? 'text-orange-400' : 'text-gray-600'">
+                  {{ m.spikeFactor.toFixed(1) }}x
+                </span>
+                <span v-else class="text-gray-700">\u2014</span>
               </td>
               <td class="px-4 py-2.5 w-32">
                 <div class="flex items-center gap-2 justify-end">

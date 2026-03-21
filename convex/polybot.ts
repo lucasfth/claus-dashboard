@@ -43,6 +43,10 @@ export const upsertRun = internalMutation({
       marketId: v.string(),
       marketQuestion: v.string(),
       score: v.number(),
+      vwap: v.optional(v.number()),
+      imbalance: v.optional(v.number()),
+      spikeFactor: v.optional(v.number()),
+      largeTrades: v.optional(v.number()),
     })),
   },
   handler: async (ctx, args) => {
@@ -74,6 +78,10 @@ export const upsertRun = internalMutation({
           marketId: m.marketId,
           marketQuestion: m.marketQuestion,
           score: m.score,
+          vwap: m.vwap,
+          imbalance: m.imbalance,
+          spikeFactor: m.spikeFactor,
+          largeTrades: m.largeTrades,
         })
       }
     }

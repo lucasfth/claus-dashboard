@@ -77,5 +77,9 @@ export default defineSchema({
     marketId: v.string(),
     marketQuestion: v.string(),
     score: v.number(),
+    vwap: v.optional(v.number()),
+    imbalance: v.optional(v.number()),
+    spikeFactor: v.optional(v.number()),
+    largeTrades: v.optional(v.number()),
   }).index('by_runId', ['runId']).index('by_score', ['score']),
 })
