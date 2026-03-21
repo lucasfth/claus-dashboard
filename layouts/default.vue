@@ -3,11 +3,11 @@ const route = useRoute()
 const { loggedIn, clear } = useUserSession()
 
 const nav = [
-  { href: '/feed', label: 'Feed' },
-  { href: '/bridget', label: 'Bridget' },
-  { href: '/commands', label: 'Commands' },
   { href: '/tasks', label: 'Tasks' },
   { href: '/polybot', label: 'Polybot' },
+  { href: '/bridget', label: 'Bridget' },
+  { href: '/commands', label: 'Commands' },
+  { href: '/feed', label: 'Feed' },
 ]
 
 async function signOut() {
