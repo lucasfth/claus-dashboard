@@ -7,6 +7,7 @@ const nav = [
   { href: '/bridget', label: 'Bridget' },
   { href: '/commands', label: 'Commands' },
   { href: '/tasks', label: 'Tasks' },
+  { href: '/polybot', label: 'Polybot' },
 ]
 
 async function signOut() {

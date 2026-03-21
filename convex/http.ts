@@ -140,6 +140,25 @@ const markTaskDone = httpAction(async (ctx, request) => {
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } })
 })
 
+const pushPolybotRun = httpAction(async (ctx, request) => {
+  const err = checkSecret(request)
+  if (err) return err
+  const body = await request.json().catch(() => null)
+  if (!body?.runId) return new Response(JSON.stringify({ error: 'Missing runId' }), { status: 400 })
+  await ctx.runMutation(internal.polybot.upsertRun, {
+    runId: body.runId,
+    startedAt: body.startedAt ?? Date.now(),
+    finishedAt: body.finishedAt ?? Date.now(),
+    dryRun: body.dryRun ?? true,
+    totalMarkets: body.totalMarkets ?? 0,
+    analysesGenerated: body.analysesGenerated ?? 0,
+    tradesExecuted: body.tradesExecuted ?? 0,
+    successfulTrades: body.successfulTrades ?? 0,
+    topMarkets: body.topMarkets ?? [],
+  })
+  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+})
+
 const http = httpRouter()
 http.route({ path: '/pushActivity', method: 'POST', handler: pushActivity })
 http.route({ path: '/pushJobs', method: 'POST', handler: pushJobs })
@@ -154,5 +173,6 @@ http.route({ path: '/getMessages', method: 'GET', handler: getMessages })
 http.route({ path: '/markMessageProcessed', method: 'POST', handler: markMessageProcessed })
 http.route({ path: '/getTasks', method: 'GET', handler: getTasks })
 http.route({ path: '/markTaskDone', method: 'POST', handler: markTaskDone })
+http.route({ path: '/pushPolybotRun', method: 'POST', handler: pushPolybotRun })
 
 export default http

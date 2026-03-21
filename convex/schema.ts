@@ -60,4 +60,22 @@ export default defineSchema({
     commandsPushed: v.optional(v.number()),
     activitiesPushed: v.optional(v.number()),
   }),
+
+  polybotRuns: defineTable({
+    runId: v.string(),
+    startedAt: v.number(),
+    finishedAt: v.number(),
+    dryRun: v.boolean(),
+    totalMarkets: v.number(),
+    analysesGenerated: v.number(),
+    tradesExecuted: v.number(),
+    successfulTrades: v.number(),
+  }).index('by_startedAt', ['startedAt']),
+
+  polybotTopMarkets: defineTable({
+    runId: v.string(),
+    marketId: v.string(),
+    marketQuestion: v.string(),
+    score: v.number(),
+  }).index('by_runId', ['runId']).index('by_score', ['score']),
 })
