@@ -1,6 +1,9 @@
 <script setup lang="ts">
 const route = useRoute()
 const { loggedIn, clear } = useUserSession()
+const { registerSwipeListener, unregisterSwipeListener, swipeDirection } = useSwipeNavigation()
+
+const mainElement = ref<HTMLElement | null>(null)
 
 const nav = [
   { href: '/tasks', label: 'Tasks' },
@@ -14,10 +17,58 @@ async function signOut() {
   await clear()
   navigateTo('/login')
 }
+
+// Register swipe listeners when component mounts
+onMounted(() => {
+  if (mainElement.value) {
+    registerSwipeListener(mainElement.value)
+  }
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  if (mainElement.value) {
+    unregisterSwipeListener(mainElement.value)
+  }
+})
 </script>
 
+<style scoped>
+/* Slide left animation (default for swiping left - next page) */
+.slide-left-enter-active,
+.slide-left-leave-active {
+  transition: opacity 0.1s ease, transform 0.1s ease;
+}
+
+.slide-left-enter-from {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.slide-left-leave-to {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+
+/* Slide right animation (for swiping right - previous page) */
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: opacity 0.1s ease, transform 0.1s ease;
+}
+
+.slide-right-enter-from {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+
+.slide-right-leave-to {
+  opacity: 0;
+  transform: translateX(100%);
+}
+</style>
+
 <template>
-  <div class="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden">
+  <div ref="mainElement" class="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden">
     <nav v-if="loggedIn" class="border-b border-gray-800 sticky top-0 z-10 bg-[#0a0a0a]">
       <div class="w-full max-w-4xl mx-auto px-4 py-2 sm:h-14 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div class="flex items-center gap-4 min-w-0">
@@ -43,7 +94,10 @@ async function signOut() {
       </div>
     </nav>
     <main class="w-full max-w-4xl mx-auto px-4 py-8">
-      <slot></slot>
+      <!-- <Transition :name="`slide-${swipeDirection || 'left'}`" mode="out-in"> -->
+      <Transition :name="`${swipeDirection ? 'slide-' + swipeDirection : ''}`" mode="out-in">
+        <slot />
+      </Transition>
     </main>
   </div>
 </template>
