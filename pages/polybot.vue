@@ -28,6 +28,16 @@ const stats = computed(() => {
   return { totalRuns, totalAnalyses, totalTrades, lastRun }
 })
 
+const pnl = computed(() => {
+  if (!trades.value) return null
+  const isBuy = (side: string) => side.toLowerCase() === 'buy' || side.toLowerCase().includes('yes')
+  const isSell = (side: string) => side.toLowerCase() === 'sell' || side.toLowerCase().includes('no')
+  const deployed = trades.value.filter(t => t.success && isBuy(t.side)).reduce((s, t) => s + t.sizeUsd, 0)
+  const returned = trades.value.filter(t => t.success && isSell(t.side)).reduce((s, t) => s + t.sizeUsd, 0)
+  const net = returned - deployed
+  return { deployed, returned, net }
+})
+
 function scoreColor(score: number): string {
   if (score >= 0.7) return 'bg-green-500'
   if (score >= 0.4) return 'bg-yellow-500'
@@ -74,10 +84,10 @@ function annotationStyle(ann: string): string {
     </div>
 
     <!-- Stats row -->
-    <div v-if="runs === undefined" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-      <div v-for="i in 4" :key="i" class="h-16 rounded-lg bg-gray-900/50 animate-pulse" />
+    <div v-if="runs === undefined" class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+      <div v-for="i in 5" :key="i" class="h-16 rounded-lg bg-gray-900/50 animate-pulse" />
     </div>
-    <div v-else class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+    <div v-else class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
       <div class="rounded-lg bg-gray-900/30 border border-gray-800/50 px-4 py-3">
         <p class="text-xs text-gray-600 mb-1">Total runs</p>
         <p class="text-2xl font-semibold">{{ stats?.totalRuns ?? 0 }}</p>
@@ -94,6 +104,29 @@ function annotationStyle(ann: string): string {
         <p class="text-xs text-gray-600 mb-1">Last run</p>
         <p class="text-sm font-medium truncate">
           {{ stats?.lastRun ? relativeTime(stats.lastRun.startedAt * 1000) : '\u2014' }}
+        </p>
+      </div>
+      <!-- P&L stat -->
+      <div
+        class="rounded-lg border px-4 py-3"
+        :class="pnl && pnl.net > 0
+          ? 'bg-green-900/20 border-green-800/40'
+          : pnl && pnl.net < 0
+            ? 'bg-red-900/20 border-red-800/40'
+            : 'bg-gray-900/30 border-gray-800/50'"
+      >
+        <p class="text-xs text-gray-600 mb-1">Sim P&amp;L</p>
+        <p
+          class="text-2xl font-semibold font-mono"
+          :class="pnl && pnl.net > 0 ? 'text-green-400' : pnl && pnl.net < 0 ? 'text-red-400' : ''"
+        >
+          <template v-if="pnl">
+            {{ pnl.net >= 0 ? '+' : '' }}${{ pnl.net.toFixed(2) }}
+          </template>
+          <template v-else>\u2014</template>
+        </p>
+        <p v-if="pnl" class="text-xs text-gray-600 mt-0.5">
+          in ${{ pnl.deployed.toFixed(2) }} / out ${{ pnl.returned.toFixed(2) }}
         </p>
       </div>
     </div>

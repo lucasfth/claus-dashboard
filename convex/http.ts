@@ -155,6 +155,7 @@ const pushPolybotRun = httpAction(async (ctx, request) => {
     tradesExecuted: body.tradesExecuted ?? 0,
     successfulTrades: body.successfulTrades ?? 0,
     topMarkets: body.topMarkets ?? [],
+    trades: body.trades ?? [],
   })
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } })
 })
