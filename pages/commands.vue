@@ -10,13 +10,14 @@ const TYPE_STYLE: Record<string, string> = {
   command: 'bg-blue-900/50 text-blue-300 border-blue-800/50',
   skill: 'bg-purple-900/50 text-purple-300 border-purple-800/50',
   claudeclaw: 'bg-yellow-900/50 text-yellow-300 border-yellow-800/50',
+  bridge: 'bg-red-900/50 text-red-300 border-red-800/50',
 }
 
 const sorted = computed(() => {
   if (!commands.value) return []
   return [...commands.value].sort((a, b) => {
-    const order = { command: 0, skill: 1, claudeclaw: 2 }
-    return (order[a.type] ?? 3) - (order[b.type] ?? 3) || a.name.localeCompare(b.name)
+    const order = { command: 0, skill: 1, claudeclaw: 2, bridge: 3 }
+    return (order[a.type] ?? 4) - (order[b.type] ?? 4) || a.name.localeCompare(b.name)
   })
 })
 

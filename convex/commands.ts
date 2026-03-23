@@ -21,7 +21,7 @@ export const replaceAll = internalMutation({
       v.object({
         name: v.string(),
         description: v.string(),
-        type: v.union(v.literal('command'), v.literal('skill'), v.literal('claudeclaw')),
+        type: v.union(v.literal('command'), v.literal('skill'), v.literal('claudeclaw'), v.literal('bridge')),
       }),
     ),
   },

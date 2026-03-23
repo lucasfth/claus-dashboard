@@ -40,7 +40,7 @@ export default defineSchema({
   commands: defineTable({
     name: v.string(),
     description: v.string(),
-    type: v.union(v.literal('command'), v.literal('skill'), v.literal('claudeclaw')),
+    type: v.union(v.literal('command'), v.literal('skill'), v.literal('claudeclaw'), v.literal('bridge')),
     updatedAt: v.number(),
   }).index('by_name', ['name']),
 
