@@ -169,10 +169,11 @@ const pushPolybotRuns = httpAction(async (ctx, request) => {
   return new Response(JSON.stringify({ ok: true, count: body.length }), { status: 200, headers: { 'Content-Type': 'application/json' } })
 })
 
+// Deletes one batch (100 docs/table). Client loops until all counts are 0.
 const clearPolybotData = httpAction(async (ctx, request) => {
   const err = checkSecret(request)
   if (err) return err
-  const result = await ctx.runMutation(internal.polybot.clearAll, {})
+  const result = await ctx.runMutation(internal.polybot.clearBatch, {})
   return new Response(JSON.stringify({ ok: true, deleted: result }), { status: 200, headers: { 'Content-Type': 'application/json' } })
 })
 
