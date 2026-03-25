@@ -145,17 +145,18 @@ export const upsertRuns = internalMutation({
   },
 })
 
-// Delete all polybot data from all three tables
-export const clearAll = internalMutation({
+// Delete a batch of polybot data (paginated — call until all return 0)
+const BATCH = 100
+export const clearBatch = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const runs = await ctx.db.query('polybotRuns').collect()
+    const runs = await ctx.db.query('polybotRuns').take(BATCH)
     for (const doc of runs) await ctx.db.delete(doc._id)
 
-    const markets = await ctx.db.query('polybotTopMarkets').collect()
+    const markets = await ctx.db.query('polybotTopMarkets').take(BATCH)
     for (const doc of markets) await ctx.db.delete(doc._id)
 
-    const trades = await ctx.db.query('polybotTrades').collect()
+    const trades = await ctx.db.query('polybotTrades').take(BATCH)
     for (const doc of trades) await ctx.db.delete(doc._id)
 
     return { runs: runs.length, markets: markets.length, trades: trades.length }
