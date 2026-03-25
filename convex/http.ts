@@ -169,6 +169,13 @@ const pushPolybotRuns = httpAction(async (ctx, request) => {
   return new Response(JSON.stringify({ ok: true, count: body.length }), { status: 200, headers: { 'Content-Type': 'application/json' } })
 })
 
+const clearPolybotData = httpAction(async (ctx, request) => {
+  const err = checkSecret(request)
+  if (err) return err
+  const result = await ctx.runMutation(internal.polybot.clearAll, {})
+  return new Response(JSON.stringify({ ok: true, deleted: result }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+})
+
 const http = httpRouter()
 http.route({ path: '/pushActivity', method: 'POST', handler: pushActivity })
 http.route({ path: '/pushJobs', method: 'POST', handler: pushJobs })
@@ -185,5 +192,6 @@ http.route({ path: '/getTasks', method: 'GET', handler: getTasks })
 http.route({ path: '/markTaskDone', method: 'POST', handler: markTaskDone })
 http.route({ path: '/pushPolybotRun', method: 'POST', handler: pushPolybotRun })
 http.route({ path: '/pushPolybotRuns', method: 'POST', handler: pushPolybotRuns })
+http.route({ path: '/clearPolybotData', method: 'POST', handler: clearPolybotData })
 
 export default http
