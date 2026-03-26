@@ -1,13 +1,22 @@
 import { internalMutation, internalQuery, mutation } from './_generated/server'
+import { internal } from './_generated/api'
 import { v } from 'convex/values'
 
 export const send = mutation({
   args: { content: v.string() },
   handler: async (ctx, args) => {
+    const content = args.content.trim()
+    const now = Date.now()
     await ctx.db.insert('messages', {
-      content: args.content.trim(),
-      createdAt: Date.now(),
+      content,
+      createdAt: now,
       processed: false,
+    })
+    // Also show immediately in the conversation feed
+    await ctx.runMutation(internal.chatMessages.insert, {
+      role: 'user',
+      content,
+      timestamp: now,
     })
   },
 })

@@ -13,7 +13,7 @@ const thread = computed(() => (messages.value ?? []).filter(m => !m.pinned))
 const input = ref('')
 const sending = ref(false)
 
-async function send() {
+async function submit() {
   const content = input.value.trim()
   if (!content || sending.value) return
   sending.value = true
@@ -28,7 +28,7 @@ async function send() {
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault()
-    send()
+    submit()
   }
 }
 
@@ -44,23 +44,21 @@ function formatTime(ts: number): string {
   <div class="flex flex-col gap-4">
     <h1 class="text-xl font-semibold">Chat</h1>
 
-    <!-- Message input -->
+    <!-- Input -->
     <div class="flex gap-2">
       <textarea
         v-model="input"
         rows="2"
-        placeholder="Message Claus..."
-        class="flex-1 bg-gray-900/60 border border-gray-700/50 rounded-xl px-3 py-2 text-sm text-gray-100 placeholder-gray-600 resize-none focus:outline-none focus:border-blue-700/60"
+        placeholder="Message Claus…"
+        class="flex-1 resize-none bg-gray-900/60 border border-gray-700/50 rounded-xl px-3 py-2 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-blue-700/60"
         :disabled="sending"
         @keydown="onKeydown"
       />
       <button
-        class="px-4 py-2 rounded-xl bg-blue-900/50 border border-blue-800/40 text-blue-300 text-sm font-medium hover:bg-blue-800/50 transition-colors disabled:opacity-40"
+        class="px-4 py-2 rounded-xl bg-blue-800/60 hover:bg-blue-700/60 text-sm text-blue-200 border border-blue-700/40 transition-colors disabled:opacity-40 self-end"
         :disabled="!input.trim() || sending"
-        @click="send"
-      >
-        {{ sending ? '...' : 'Send' }}
-      </button>
+        @click="submit"
+      >Send</button>
     </div>
 
     <!-- Pinned messages -->
@@ -86,7 +84,7 @@ function formatTime(ts: number): string {
       </div>
     </div>
 
-    <!-- Loading skeleton -->
+    <!-- Loading -->
     <div v-if="messages === undefined" class="space-y-3">
       <div v-for="i in 6" :key="i" class="h-12 rounded-xl bg-gray-900/50 animate-pulse" />
     </div>
@@ -95,7 +93,7 @@ function formatTime(ts: number): string {
       No messages yet.
     </p>
 
-    <!-- Chat thread (newest first) -->
+    <!-- Chat thread (newest at top) -->
     <div v-else class="space-y-1">
       <div
         v-for="msg in thread"
