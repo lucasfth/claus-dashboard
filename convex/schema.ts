@@ -15,6 +15,15 @@ export default defineSchema({
     details: v.optional(v.string()),
   }).index('by_timestamp', ['timestamp']),
 
+  chatMessages: defineTable({
+    role: v.union(v.literal('user'), v.literal('assistant')),
+    content: v.string(),
+    timestamp: v.number(),
+    pinned: v.optional(v.boolean()),
+  })
+    .index('by_timestamp', ['timestamp'])
+    .index('by_pinned', ['pinned']),
+
   contextNotes: defineTable({
     content: v.string(),
     updatedAt: v.number(),

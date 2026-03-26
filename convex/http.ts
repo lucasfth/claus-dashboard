@@ -169,12 +169,24 @@ const pushPolybotRuns = httpAction(async (ctx, request) => {
   return new Response(JSON.stringify({ ok: true, count: body.length }), { status: 200, headers: { 'Content-Type': 'application/json' } })
 })
 
-// Deletes one batch (100 docs/table). Client loops until all counts are 0.
 const clearPolybotData = httpAction(async (ctx, request) => {
   const err = checkSecret(request)
   if (err) return err
-  const result = await ctx.runMutation(internal.polybot.clearBatch, {})
+  const result = await ctx.runMutation(internal.polybot.clearAll, {})
   return new Response(JSON.stringify({ ok: true, deleted: result }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+})
+
+const pushChatMessage = httpAction(async (ctx, request) => {
+  const err = checkSecret(request)
+  if (err) return err
+  const body = await request.json().catch(() => null)
+  if (!body?.role || !body?.content) return new Response(JSON.stringify({ error: 'Missing role or content' }), { status: 400 })
+  await ctx.runMutation(internal.chatMessages.insert, {
+    role: body.role,
+    content: body.content,
+    timestamp: body.timestamp ?? Date.now(),
+  })
+  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } })
 })
 
 const http = httpRouter()
@@ -194,5 +206,6 @@ http.route({ path: '/markTaskDone', method: 'POST', handler: markTaskDone })
 http.route({ path: '/pushPolybotRun', method: 'POST', handler: pushPolybotRun })
 http.route({ path: '/pushPolybotRuns', method: 'POST', handler: pushPolybotRuns })
 http.route({ path: '/clearPolybotData', method: 'POST', handler: clearPolybotData })
+http.route({ path: '/pushChatMessage', method: 'POST', handler: pushChatMessage })
 
 export default http

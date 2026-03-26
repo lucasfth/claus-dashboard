@@ -3,57 +3,91 @@ import { api } from '~/convex/_generated/api'
 
 definePageMeta({ middleware: 'auth' })
 
-const activities = useConvexQuery(api.activities.list, {})
+const messages = useConvexQuery(api.chatMessages.list, {})
+const togglePin = useConvexMutation(api.chatMessages.togglePin)
 
-const TYPE_STYLE: Record<string, string> = {
-  telegram: 'bg-blue-900/50 text-blue-300 border-blue-800/50',
-  cron: 'bg-yellow-900/50 text-yellow-300 border-yellow-800/50',
-  github: 'bg-purple-900/50 text-purple-300 border-purple-800/50',
-  briefing: 'bg-green-900/50 text-green-300 border-green-800/50',
-  misc: 'bg-gray-800/50 text-gray-400 border-gray-700/50',
-}
+const pinned = computed(() => (messages.value ?? []).filter(m => m.pinned))
+const thread = computed(() => (messages.value ?? []).filter(m => !m.pinned))
 
-function relativeTime(ts: number): string {
+const chatBottom = ref<HTMLElement | null>(null)
+
+watch(messages, () => {
+  nextTick(() => chatBottom.value?.scrollIntoView({ behavior: 'smooth' }))
+})
+
+function formatTime(ts: number): string {
+  const d = new Date(ts)
   const diff = Date.now() - ts
-  if (diff < 60_000) return 'just now'
-  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`
-  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`
-  return new Date(ts).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+  if (diff < 86_400_000) return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 </script>
 
 <template>
-  <div>
-    <h1 class="text-xl font-semibold mb-6">Activity Feed</h1>
+  <div class="flex flex-col gap-4">
+    <h1 class="text-xl font-semibold">Chat</h1>
 
-    <div v-if="activities === undefined" class="space-y-3">
-      <div v-for="i in 6" :key="i" class="h-14 rounded-lg bg-gray-900/50 animate-pulse" />
+    <!-- Pinned messages -->
+    <div v-if="pinned.length > 0" class="space-y-2">
+      <p class="text-xs text-gray-500 font-mono uppercase tracking-wider">Pinned</p>
+      <div
+        v-for="msg in pinned"
+        :key="msg._id"
+        class="flex gap-2 items-start px-3 py-2 rounded-lg border border-yellow-800/40 bg-yellow-900/10 group"
+      >
+        <span class="text-yellow-500 text-xs mt-0.5 shrink-0">📌</span>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs text-gray-500 mb-0.5 font-mono">
+            {{ msg.role === 'user' ? 'Lucas' : 'Claus' }} · {{ formatTime(msg.timestamp) }}
+          </p>
+          <p class="text-sm text-gray-200 whitespace-pre-wrap break-words">{{ msg.content }}</p>
+        </div>
+        <button
+          class="opacity-0 group-hover:opacity-100 transition-opacity text-gray-600 hover:text-yellow-400 text-xs shrink-0"
+          title="Unpin"
+          @click="togglePin({ id: msg._id })"
+        >unpin</button>
+      </div>
     </div>
 
-    <p v-else-if="activities.length === 0" class="text-gray-600 text-sm">
-      No activity yet.
+    <!-- Loading skeleton -->
+    <div v-if="messages === undefined" class="space-y-3">
+      <div v-for="i in 6" :key="i" class="h-12 rounded-xl bg-gray-900/50 animate-pulse" />
+    </div>
+
+    <p v-else-if="thread.length === 0 && pinned.length === 0" class="text-gray-600 text-sm">
+      No messages yet.
     </p>
 
-    <div v-else class="space-y-2">
+    <!-- Chat thread -->
+    <div v-else class="space-y-1">
       <div
-        v-for="item in activities"
-        :key="item._id"
-        class="flex flex-col gap-1.5 px-4 py-3 rounded-lg bg-gray-900/30 border border-gray-800/50 hover:border-gray-700/50 transition-colors"
+        v-for="msg in thread"
+        :key="msg._id"
+        class="flex group"
+        :class="msg.role === 'user' ? 'justify-end' : 'justify-start'"
       >
-        <div class="flex items-center gap-3">
-          <span
-            class="inline-block text-xs px-2 py-0.5 rounded font-mono border"
-            :class="TYPE_STYLE[item.type] ?? TYPE_STYLE.misc"
+        <div
+          class="relative max-w-[80%] px-3 py-2 rounded-2xl"
+          :class="msg.role === 'user'
+            ? 'bg-blue-900/50 border border-blue-800/40 rounded-br-sm'
+            : 'bg-gray-900/60 border border-gray-700/40 rounded-bl-sm'"
+        >
+          <p class="text-[11px] font-mono mb-1"
+            :class="msg.role === 'user' ? 'text-blue-400/70 text-right' : 'text-gray-500'"
           >
-            {{ item.type }}
-          </span>
-          <span class="text-sm flex-1 leading-snug">{{ item.summary }}</span>
-          <span class="text-gray-600 text-xs shrink-0 font-mono">{{ relativeTime(item.timestamp) }}</span>
+            {{ msg.role === 'user' ? 'Lucas' : 'Claus' }} · {{ formatTime(msg.timestamp) }}
+          </p>
+          <p class="text-sm leading-relaxed whitespace-pre-wrap break-words text-gray-100">{{ msg.content }}</p>
+          <button
+            class="absolute -top-2 opacity-0 group-hover:opacity-100 transition-opacity text-gray-600 hover:text-yellow-400 text-xs"
+            :class="msg.role === 'user' ? 'right-2' : 'left-2'"
+            title="Pin message"
+            @click="togglePin({ id: msg._id })"
+          >📌</button>
         </div>
-        <p v-if="item.details" class="text-gray-500 text-xs font-mono leading-relaxed">
-          {{ item.details }}
-        </p>
       </div>
+      <div ref="chatBottom" />
     </div>
   </div>
 </template>
