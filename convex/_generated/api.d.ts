@@ -9,12 +9,15 @@
  */
 
 import type * as activities from "../activities.js";
+import type * as bridget from "../bridget.js";
+import type * as chatMessages from "../chatMessages.js";
 import type * as commands from "../commands.js";
 import type * as context from "../context.js";
 import type * as crons from "../crons.js";
 import type * as http from "../http.js";
 import type * as jobs from "../jobs.js";
 import type * as messages from "../messages.js";
+import type * as polybot from "../polybot.js";
 import type * as tasks from "../tasks.js";
 
 import type {
@@ -25,12 +28,15 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   activities: typeof activities;
+  bridget: typeof bridget;
+  chatMessages: typeof chatMessages;
   commands: typeof commands;
   context: typeof context;
   crons: typeof crons;
   http: typeof http;
   jobs: typeof jobs;
   messages: typeof messages;
+  polybot: typeof polybot;
   tasks: typeof tasks;
 }>;
 
