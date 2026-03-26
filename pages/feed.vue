@@ -74,7 +74,7 @@ function formatTime(ts: number): string {
           <p class="text-xs text-gray-500 mb-0.5 font-mono">
             {{ msg.role === 'user' ? 'Lucas' : 'Claus' }} · {{ formatTime(msg.timestamp) }}
           </p>
-          <p class="text-sm text-gray-200 whitespace-pre-wrap break-words">{{ msg.content }}</p>
+          <MarkdownContent :content="msg.content" />
         </div>
         <button
           class="opacity-0 group-hover:opacity-100 transition-opacity text-gray-600 hover:text-yellow-400 text-xs shrink-0"
@@ -102,7 +102,7 @@ function formatTime(ts: number): string {
         :class="msg.role === 'user' ? 'justify-end' : 'justify-start'"
       >
         <div
-          class="relative max-w-[80%] px-3 py-2 rounded-2xl"
+          class="relative max-w-[80%] px-3 py-2 rounded-2xl text-sm text-gray-100"
           :class="msg.role === 'user'
             ? 'bg-blue-900/50 border border-blue-800/40 rounded-br-sm'
             : 'bg-gray-900/60 border border-gray-700/40 rounded-bl-sm'"
@@ -112,7 +112,7 @@ function formatTime(ts: number): string {
           >
             {{ msg.role === 'user' ? 'Lucas' : 'Claus' }} · {{ formatTime(msg.timestamp) }}
           </p>
-          <p class="text-sm leading-relaxed whitespace-pre-wrap break-words text-gray-100">{{ msg.content }}</p>
+          <MarkdownContent :content="msg.content" />
           <button
             class="absolute -top-2 opacity-0 group-hover:opacity-100 transition-opacity text-gray-600 hover:text-yellow-400 text-xs"
             :class="msg.role === 'user' ? 'right-2' : 'left-2'"
