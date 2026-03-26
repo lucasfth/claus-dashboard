@@ -189,6 +189,13 @@ const pushChatMessage = httpAction(async (ctx, request) => {
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } })
 })
 
+const clearChatMessages = httpAction(async (ctx, request) => {
+  const err = checkSecret(request)
+  if (err) return err
+  const result = await ctx.runMutation(internal.chatMessages.clearAll, {})
+  return new Response(JSON.stringify({ ok: true, deleted: result.deleted }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+})
+
 const http = httpRouter()
 http.route({ path: '/pushActivity', method: 'POST', handler: pushActivity })
 http.route({ path: '/pushJobs', method: 'POST', handler: pushJobs })
@@ -207,5 +214,6 @@ http.route({ path: '/pushPolybotRun', method: 'POST', handler: pushPolybotRun })
 http.route({ path: '/pushPolybotRuns', method: 'POST', handler: pushPolybotRuns })
 http.route({ path: '/clearPolybotData', method: 'POST', handler: clearPolybotData })
 http.route({ path: '/pushChatMessage', method: 'POST', handler: pushChatMessage })
+http.route({ path: '/clearChatMessages', method: 'POST', handler: clearChatMessages })
 
 export default http

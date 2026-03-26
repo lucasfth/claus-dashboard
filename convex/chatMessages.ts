@@ -6,19 +6,8 @@ export const list = query({
   handler: async (ctx) => {
     return await ctx.db.query('chatMessages')
       .withIndex('by_timestamp')
-      .order('asc')
-      .take(200)
-  },
-})
-
-export const listPinned = query({
-  args: {},
-  handler: async (ctx) => {
-    const all = await ctx.db.query('chatMessages')
-      .withIndex('by_timestamp')
       .order('desc')
-      .collect()
-    return all.filter(m => m.pinned)
+      .take(200)
   },
 })
 
@@ -44,5 +33,14 @@ export const togglePin = mutation({
     const msg = await ctx.db.get(args.id)
     if (!msg) return
     await ctx.db.patch(args.id, { pinned: !msg.pinned })
+  },
+})
+
+export const clearAll = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const all = await ctx.db.query('chatMessages').collect()
+    for (const doc of all) await ctx.db.delete(doc._id)
+    return { deleted: all.length }
   },
 })

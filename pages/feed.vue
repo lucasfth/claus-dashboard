@@ -5,15 +5,32 @@ definePageMeta({ middleware: 'auth' })
 
 const messages = useConvexQuery(api.chatMessages.list, {})
 const togglePin = useConvexMutation(api.chatMessages.togglePin)
+const sendMessage = useConvexMutation(api.messages.send)
 
 const pinned = computed(() => (messages.value ?? []).filter(m => m.pinned))
 const thread = computed(() => (messages.value ?? []).filter(m => !m.pinned))
 
-const chatBottom = ref<HTMLElement | null>(null)
+const input = ref('')
+const sending = ref(false)
 
-watch(messages, () => {
-  nextTick(() => chatBottom.value?.scrollIntoView({ behavior: 'smooth' }))
-})
+async function send() {
+  const content = input.value.trim()
+  if (!content || sending.value) return
+  sending.value = true
+  try {
+    await sendMessage({ content })
+    input.value = ''
+  } finally {
+    sending.value = false
+  }
+}
+
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault()
+    send()
+  }
+}
 
 function formatTime(ts: number): string {
   const d = new Date(ts)
@@ -26,6 +43,25 @@ function formatTime(ts: number): string {
 <template>
   <div class="flex flex-col gap-4">
     <h1 class="text-xl font-semibold">Chat</h1>
+
+    <!-- Message input -->
+    <div class="flex gap-2">
+      <textarea
+        v-model="input"
+        rows="2"
+        placeholder="Message Claus..."
+        class="flex-1 bg-gray-900/60 border border-gray-700/50 rounded-xl px-3 py-2 text-sm text-gray-100 placeholder-gray-600 resize-none focus:outline-none focus:border-blue-700/60"
+        :disabled="sending"
+        @keydown="onKeydown"
+      />
+      <button
+        class="px-4 py-2 rounded-xl bg-blue-900/50 border border-blue-800/40 text-blue-300 text-sm font-medium hover:bg-blue-800/50 transition-colors disabled:opacity-40"
+        :disabled="!input.trim() || sending"
+        @click="send"
+      >
+        {{ sending ? '...' : 'Send' }}
+      </button>
+    </div>
 
     <!-- Pinned messages -->
     <div v-if="pinned.length > 0" class="space-y-2">
@@ -59,7 +95,7 @@ function formatTime(ts: number): string {
       No messages yet.
     </p>
 
-    <!-- Chat thread -->
+    <!-- Chat thread (newest first) -->
     <div v-else class="space-y-1">
       <div
         v-for="msg in thread"
@@ -87,7 +123,6 @@ function formatTime(ts: number): string {
           >📌</button>
         </div>
       </div>
-      <div ref="chatBottom" />
     </div>
   </div>
 </template>
