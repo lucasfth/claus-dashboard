@@ -20,9 +20,7 @@ export default defineSchema({
     content: v.string(),
     timestamp: v.number(),
     pinned: v.optional(v.boolean()),
-  })
-    .index('by_timestamp', ['timestamp'])
-    .index('by_pinned', ['pinned']),
+  }).index('by_timestamp', ['timestamp']),
 
   contextNotes: defineTable({
     content: v.string(),
