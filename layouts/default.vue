@@ -1,103 +1,69 @@
 <script setup lang="ts">
 const route = useRoute()
 const { loggedIn, clear } = useUserSession()
-const { registerSwipeListener, unregisterSwipeListener, swipeDirection } = useSwipeNavigation()
-
-const mainElement = ref<HTMLElement | null>(null)
 
 const nav = [
-  { href: '/tasks', label: 'Tasks' },
-  { href: '/polybot', label: 'Polybot' },
-  { href: '/bridget', label: 'Bridget' },
-  { href: '/commands', label: 'Commands' },
-  { href: '/feed', label: 'Chat' },
+  { href: '/feed', label: 'Chat', icon: '💬' },
+  { href: '/tasks', label: 'Tasks', icon: '✓' },
+  { href: '/polybot', label: 'Polybot', icon: '📈' },
+  { href: '/bridget', label: 'Bridget', icon: '⚙️' },
+  { href: '/commands', label: 'Commands', icon: '/' },
 ]
 
 async function signOut() {
   await clear()
   navigateTo('/login')
 }
-
-// Register swipe listeners when component mounts
-onMounted(() => {
-  if (mainElement.value) {
-    registerSwipeListener(mainElement.value)
-  }
-})
-
-// Cleanup on unmount
-onUnmounted(() => {
-  if (mainElement.value) {
-    unregisterSwipeListener(mainElement.value)
-  }
-})
 </script>
 
-<style scoped>
-/* Slide left animation (default for swiping left - next page) */
-.slide-left-enter-active,
-.slide-left-leave-active {
-  transition: opacity 0.1s ease, transform 0.1s ease;
-}
-
-.slide-left-enter-from {
-  opacity: 0;
-  transform: translateX(100%);
-}
-
-.slide-left-leave-to {
-  opacity: 0;
-  transform: translateX(-100%);
-}
-
-/* Slide right animation (for swiping right - previous page) */
-.slide-right-enter-active,
-.slide-right-leave-active {
-  transition: opacity 0.1s ease, transform 0.1s ease;
-}
-
-.slide-right-enter-from {
-  opacity: 0;
-  transform: translateX(-100%);
-}
-
-.slide-right-leave-to {
-  opacity: 0;
-  transform: translateX(100%);
-}
-</style>
-
 <template>
-  <div ref="mainElement" class="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden">
-    <nav v-if="loggedIn" class="border-b border-gray-800 sticky top-0 z-10 bg-[#0a0a0a]">
-      <div class="w-full max-w-4xl mx-auto px-4 py-2 sm:h-14 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div class="flex items-center gap-4 min-w-0">
+  <div class="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden">
+    <!-- Top bar (desktop) -->
+    <nav v-if="loggedIn" class="hidden sm:flex border-b border-gray-800 sticky top-0 z-20 bg-[#0a0a0a]">
+      <div class="w-full max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div class="flex items-center gap-5">
           <span class="font-semibold text-sm tracking-wide shrink-0">&#x26A1; Claus</span>
-          <div class="flex items-center gap-4 min-w-0 overflow-x-auto">
+          <div class="flex items-center gap-4">
             <NuxtLink
               v-for="link in nav"
               :key="link.href"
               :to="link.href"
-              class="text-sm transition-colors whitespace-nowrap shrink-0"
+              class="text-sm transition-colors"
               :class="route.path.startsWith(link.href) ? 'text-white' : 'text-gray-500 hover:text-gray-300'"
             >
               {{ link.label }}
             </NuxtLink>
           </div>
         </div>
-        <button
-          class="text-xs text-gray-600 hover:text-gray-400 transition-colors self-end sm:self-auto shrink-0"
-          @click="signOut"
-        >
-          sign out
-        </button>
+        <button class="text-xs text-gray-600 hover:text-gray-400 transition-colors" @click="signOut">sign out</button>
       </div>
     </nav>
-    <main class="w-full max-w-4xl mx-auto px-4 py-8">
-      <!-- <Transition :name="`slide-${swipeDirection || 'left'}`" mode="out-in"> -->
-      <Transition :name="`${swipeDirection ? 'slide-' + swipeDirection : ''}`" mode="out-in">
-        <slot />
-      </Transition>
+
+    <!-- Mobile top bar -->
+    <div v-if="loggedIn" class="sm:hidden sticky top-0 z-20 bg-[#0a0a0a] border-b border-gray-800 px-4 h-12 flex items-center justify-between">
+      <span class="font-semibold text-sm tracking-wide">&#x26A1; Claus</span>
+      <button class="text-xs text-gray-600 hover:text-gray-400" @click="signOut">sign out</button>
+    </div>
+
+    <!-- Main content -->
+    <main class="w-full max-w-4xl mx-auto px-4 py-6 pb-24 sm:pb-8">
+      <slot />
     </main>
+
+    <!-- Bottom nav (mobile) -->
+    <nav v-if="loggedIn" class="sm:hidden fixed bottom-0 left-0 right-0 z-20 bg-[#0d0d0d] border-t border-gray-800">
+      <div class="flex">
+        <NuxtLink
+          v-for="link in nav"
+          :key="link.href"
+          :to="link.href"
+          class="flex-1 flex flex-col items-center justify-center py-3 gap-0.5 transition-colors"
+          :class="route.path.startsWith(link.href) ? 'text-white' : 'text-gray-600'"
+        >
+          <span class="text-lg leading-none">{{ link.icon }}</span>
+          <span class="text-[10px] font-medium tracking-wide">{{ link.label }}</span>
+        </NuxtLink>
+      </div>
+    </nav>
   </div>
 </template>
