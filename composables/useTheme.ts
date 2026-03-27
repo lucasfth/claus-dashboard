@@ -4,7 +4,9 @@ export function useTheme() {
   function applyTheme(dark: boolean) {
     if (!import.meta.client) return
     document.documentElement.classList.toggle('dark', dark)
-    try { localStorage.setItem('theme', dark ? 'dark' : 'light') } catch {}
+    try { localStorage.setItem('theme', dark ? 'dark' : 'light') } catch (e) {
+      console.warn('[useTheme] Could not persist theme to localStorage:', e)
+    }
   }
 
   function init() {

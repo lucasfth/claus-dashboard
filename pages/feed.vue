@@ -35,13 +35,13 @@ function selectCommand(name: string) {
 }
 
 // Auto-resize textarea
-function autoResize(el: HTMLTextAreaElement) {
+function autoResizeTextarea(el: HTMLTextAreaElement) {
   el.style.height = 'auto'
   el.style.height = el.scrollHeight + 'px'
 }
 
 function onInput() {
-  if (inputRef.value) autoResize(inputRef.value)
+  if (inputRef.value) autoResizeTextarea(inputRef.value)
 }
 
 async function submit() {
