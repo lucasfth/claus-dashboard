@@ -38,9 +38,9 @@ async function submit() {
   const content = input.value.trim()
   if (!content || sending.value) return
   sending.value = true
+  input.value = ''  // clear immediately — prevents double-send on mobile tap
   try {
     await sendMessage({ content })
-    input.value = ''
   } finally {
     sending.value = false
   }
@@ -173,7 +173,6 @@ function formatTime(ts: number): string {
             {{ msg.role === 'user' ? 'You' : 'Claus' }} · {{ formatTime(msg.timestamp) }}
           </p>
           <MarkdownContent :content="msg.content" />
-          <!-- Pin button: always visible on mobile, hover on desktop -->
           <button
             class="mt-2 text-gray-600 hover:text-yellow-400 active:text-yellow-400 text-xs block sm:hidden"
             @click="togglePin({ id: msg._id })"
