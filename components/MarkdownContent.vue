@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{ content: string }>()
+const { isDark } = useTheme()
 
 const containerRef = ref<HTMLElement | null>(null)
 const rendered = ref('')
@@ -21,7 +22,7 @@ async function render() {
 
   const hljs = hljsMod.default
   const mermaid = mermaidMod.default
-  mermaid.initialize({ startOnLoad: false, theme: 'dark' })
+  mermaid.initialize({ startOnLoad: false, theme: isDark.value ? 'dark' : 'default' })
 
   const renderer = new Renderer()
   const mermaidQueue: string[] = []
@@ -69,6 +70,7 @@ async function render() {
 
 onMounted(render)
 watch(() => props.content, render)
+watch(isDark, render)
 </script>
 
 <template>
@@ -86,24 +88,24 @@ watch(() => props.content, render)
 .md h1 { @apply text-lg; }
 .md h2 { @apply text-base; }
 .md h3, .md h4 { @apply text-sm; }
-.md a { @apply text-blue-400 underline; }
-.md blockquote { @apply border-l-2 border-gray-600 pl-3 text-gray-400 my-2 italic; }
-.md hr { @apply border-gray-700 my-3; }
+.md a { @apply text-blue-600 dark:text-blue-400 underline; }
+.md blockquote { @apply border-l-2 border-gray-300 dark:border-gray-600 pl-3 text-gray-500 dark:text-gray-400 my-2 italic; }
+.md hr { @apply border-gray-200 dark:border-gray-700 my-3; }
 .md table { @apply w-full text-sm my-2 border-collapse; }
-.md th { @apply border border-gray-700 px-2 py-1 bg-gray-800 font-semibold text-left; }
-.md td { @apply border border-gray-700 px-2 py-1; }
+.md th { @apply border border-gray-200 dark:border-gray-700 px-2 py-1 bg-gray-100 dark:bg-gray-800 font-semibold text-left; }
+.md td { @apply border border-gray-200 dark:border-gray-700 px-2 py-1; }
 
 /* inline code */
 .md code:not(.hljs) {
-  @apply bg-gray-800 rounded px-1 py-0.5 text-xs font-mono text-blue-300;
+  @apply bg-gray-100 dark:bg-gray-800 rounded px-1 py-0.5 text-xs font-mono text-blue-600 dark:text-blue-300;
 }
 
-/* code blocks */
+/* code blocks — kept dark in both modes for readability with dark syntax theme */
 .md pre.hljs-pre {
-  @apply relative bg-gray-950 rounded-xl p-4 overflow-x-auto my-2 text-xs;
+  @apply relative bg-gray-900 dark:bg-gray-950 rounded-xl p-4 overflow-x-auto my-2 text-xs;
 }
 .md pre.hljs-pre .hljs-lang {
-  @apply absolute top-2 right-3 text-gray-600 text-[10px] font-mono pointer-events-none;
+  @apply absolute top-2 right-3 text-gray-500 dark:text-gray-600 text-[10px] font-mono pointer-events-none;
 }
 .md code.hljs {
   @apply font-mono text-xs block bg-transparent p-0;

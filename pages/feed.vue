@@ -34,11 +34,24 @@ function selectCommand(name: string) {
   autocompleteIndex.value = 0
 }
 
+// Auto-resize textarea
+function autoResize(el: HTMLTextAreaElement) {
+  el.style.height = 'auto'
+  el.style.height = el.scrollHeight + 'px'
+}
+
+function onInput() {
+  if (inputRef.value) autoResize(inputRef.value)
+}
+
 async function submit() {
   const content = input.value.trim()
   if (!content || sending.value) return
   sending.value = true
   input.value = ''  // clear immediately — prevents double-send on mobile tap
+  nextTick(() => {
+    if (inputRef.value) inputRef.value.style.height = 'auto'
+  })
   try {
     await sendMessage({ content })
   } finally {
@@ -86,23 +99,6 @@ function formatTime(ts: number): string {
   <div class="flex flex-col gap-4">
     <!-- Input with autocomplete -->
     <div class="relative">
-      <!-- Autocomplete dropdown -->
-      <div
-        v-if="showAutocomplete && filteredCommands.length > 0"
-        class="absolute bottom-full mb-1 left-0 right-0 z-10 bg-gray-900 border border-gray-700 rounded-xl overflow-hidden shadow-xl"
-      >
-        <button
-          v-for="(cmd, i) in filteredCommands"
-          :key="cmd.name"
-          class="w-full flex items-start gap-3 px-4 py-2.5 text-left transition-colors"
-          :class="i === autocompleteIndex ? 'bg-gray-800' : 'hover:bg-gray-800/60'"
-          @mousedown.prevent="selectCommand(cmd.name)"
-        >
-          <span class="text-sm text-blue-400 font-mono shrink-0">/{{ cmd.name }}</span>
-          <span class="text-xs text-gray-500 leading-snug mt-0.5 truncate">{{ cmd.description }}</span>
-        </button>
-      </div>
-
       <!-- Textarea + send -->
       <div class="flex gap-2">
         <textarea
@@ -110,15 +106,33 @@ function formatTime(ts: number): string {
           v-model="input"
           rows="2"
           placeholder="Message Claus… (/ for commands)"
-          class="flex-1 resize-none bg-gray-900/60 border border-gray-700/50 rounded-xl px-4 py-3 text-base text-gray-100 placeholder-gray-600 focus:outline-none focus:border-blue-700/60 leading-snug"
+          class="flex-1 resize-none bg-white dark:bg-gray-900/60 border border-gray-300 dark:border-gray-700/50 rounded-xl px-4 py-3 text-base text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-blue-500 dark:focus:border-blue-700/60 leading-snug"
           :disabled="sending"
+          @input="onInput"
           @keydown="onKeydown"
         />
         <button
-          class="px-5 py-3 rounded-xl bg-blue-800/60 hover:bg-blue-700/60 active:bg-blue-600/60 text-base text-blue-200 border border-blue-700/40 transition-colors disabled:opacity-40 self-end font-medium"
+          class="px-5 py-3 rounded-xl bg-blue-600/80 hover:bg-blue-600 active:bg-blue-700 dark:bg-blue-800/60 dark:hover:bg-blue-700/60 dark:active:bg-blue-600/60 text-base text-white dark:text-blue-200 border border-blue-500/40 dark:border-blue-700/40 transition-colors disabled:opacity-40 self-end font-medium"
           :disabled="!input.trim() || sending"
           @click="submit"
         >Send</button>
+      </div>
+
+      <!-- Autocomplete dropdown (below input) -->
+      <div
+        v-if="showAutocomplete && filteredCommands.length > 0"
+        class="absolute top-full mt-1 left-0 right-0 z-10 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-xl"
+      >
+        <button
+          v-for="(cmd, i) in filteredCommands"
+          :key="cmd.name"
+          class="w-full flex items-start gap-3 px-4 py-2.5 text-left transition-colors"
+          :class="i === autocompleteIndex ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-50 dark:hover:bg-gray-800/60'"
+          @mousedown.prevent="selectCommand(cmd.name)"
+        >
+          <span class="text-sm text-blue-600 dark:text-blue-400 font-mono shrink-0">/{{ cmd.name }}</span>
+          <span class="text-xs text-gray-500 leading-snug mt-0.5 truncate">{{ cmd.description }}</span>
+        </button>
       </div>
     </div>
 
@@ -128,7 +142,7 @@ function formatTime(ts: number): string {
       <div
         v-for="msg in pinned"
         :key="msg._id"
-        class="flex gap-3 items-start px-4 py-3 rounded-xl border border-yellow-800/40 bg-yellow-900/10"
+        class="flex gap-3 items-start px-4 py-3 rounded-xl border border-yellow-400/40 dark:border-yellow-800/40 bg-yellow-50 dark:bg-yellow-900/10"
       >
         <span class="text-yellow-500 shrink-0 mt-0.5">📌</span>
         <div class="flex-1 min-w-0">
@@ -138,7 +152,7 @@ function formatTime(ts: number): string {
           <MarkdownContent :content="msg.content" />
         </div>
         <button
-          class="text-gray-600 hover:text-yellow-400 text-xs shrink-0 px-2 py-1"
+          class="text-gray-400 dark:text-gray-600 hover:text-yellow-500 dark:hover:text-yellow-400 text-xs shrink-0 px-2 py-1"
           @click="togglePin({ id: msg._id })"
         >unpin</button>
       </div>
@@ -146,10 +160,10 @@ function formatTime(ts: number): string {
 
     <!-- Loading -->
     <div v-if="messages === undefined" class="space-y-3">
-      <div v-for="i in 6" :key="i" class="h-14 rounded-2xl bg-gray-900/50 animate-pulse" />
+      <div v-for="i in 6" :key="i" class="h-14 rounded-2xl bg-gray-200 dark:bg-gray-900/50 animate-pulse" />
     </div>
 
-    <p v-else-if="thread.length === 0 && pinned.length === 0" class="text-gray-600 text-sm py-8 text-center">
+    <p v-else-if="thread.length === 0 && pinned.length === 0" class="text-gray-500 dark:text-gray-600 text-sm py-8 text-center">
       No messages yet.
     </p>
 
@@ -162,23 +176,23 @@ function formatTime(ts: number): string {
         :class="msg.role === 'user' ? 'justify-end' : 'justify-start'"
       >
         <div
-          class="relative max-w-[88%] sm:max-w-[78%] px-4 py-3 rounded-2xl text-[15px] text-gray-100"
+          class="relative max-w-[88%] sm:max-w-[78%] px-4 py-3 rounded-2xl text-[15px] text-gray-900 dark:text-gray-100"
           :class="msg.role === 'user'
-            ? 'bg-blue-900/50 border border-blue-800/40 rounded-br-md'
-            : 'bg-gray-900/60 border border-gray-700/40 rounded-bl-md'"
+            ? 'bg-blue-100 dark:bg-blue-900/50 border border-blue-200 dark:border-blue-800/40 rounded-br-md'
+            : 'bg-gray-100 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700/40 rounded-bl-md'"
         >
           <p class="text-[11px] font-mono mb-1.5"
-            :class="msg.role === 'user' ? 'text-blue-400/70 text-right' : 'text-gray-500'"
+            :class="msg.role === 'user' ? 'text-blue-500/70 dark:text-blue-400/70 text-right' : 'text-gray-400 dark:text-gray-500'"
           >
             {{ msg.role === 'user' ? 'You' : 'Claus' }} · {{ formatTime(msg.timestamp) }}
           </p>
           <MarkdownContent :content="msg.content" />
           <button
-            class="mt-2 text-gray-600 hover:text-yellow-400 active:text-yellow-400 text-xs block sm:hidden"
+            class="mt-2 text-gray-400 dark:text-gray-600 hover:text-yellow-500 dark:hover:text-yellow-400 active:text-yellow-400 text-xs block sm:hidden"
             @click="togglePin({ id: msg._id })"
           >{{ msg.pinned ? 'unpin' : '📌' }}</button>
           <button
-            class="absolute -top-2 opacity-0 hover:opacity-100 transition-opacity text-gray-600 hover:text-yellow-400 text-xs hidden sm:block"
+            class="absolute -top-2 opacity-0 hover:opacity-100 transition-opacity text-gray-400 dark:text-gray-600 hover:text-yellow-500 dark:hover:text-yellow-400 text-xs hidden sm:block"
             :class="msg.role === 'user' ? 'right-2' : 'left-2'"
             @click="togglePin({ id: msg._id })"
           >📌</button>

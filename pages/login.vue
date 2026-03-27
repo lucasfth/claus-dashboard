@@ -4,7 +4,7 @@ if (loggedIn.value) await navigateTo('/feed')
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-[#0a0a0a]">
+  <div class="min-h-screen flex items-center justify-center bg-white dark:bg-[#0a0a0a]">
     <div class="text-center space-y-6">
       <div>
         <h1 class="text-3xl font-bold">⚡ Claus Dashboard</h1>
