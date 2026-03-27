@@ -11,14 +11,52 @@ const sendMessage = useConvexMutation(api.messages.send)
 const pinned = computed(() => (messages.value ?? []).filter(m => m.pinned))
 const thread = computed(() => (messages.value ?? []).filter(m => !m.pinned))
 
+const DRAFT_KEY = 'claus-chat-draft'
+
 const input = ref('')
 const sending = ref(false)
 const autocompleteIndex = ref(0)
+const autocompleteHidden = ref(false)
 const inputRef = ref<HTMLTextAreaElement | null>(null)
 
-// Command autocomplete
-const showAutocomplete = computed(() => input.value.startsWith('/') && !input.value.includes(' '))
-const query = computed(() => input.value.slice(1).toLowerCase())
+// Persist draft across reloads / tab changes
+watch(input, (val) => {
+  if (!import.meta.client) return
+  try {
+    if (val) { localStorage.setItem(DRAFT_KEY, val) }
+    else { localStorage.removeItem(DRAFT_KEY) }
+  } catch (e) {
+    console.warn('[chat] Could not persist draft:', e)
+  }
+})
+
+onMounted(() => {
+  try {
+    const saved = localStorage.getItem(DRAFT_KEY)
+    if (saved) {
+      input.value = saved
+      nextTick(() => {
+        if (inputRef.value) autoResizeTextarea(inputRef.value)
+      })
+    }
+  } catch (e) {
+    console.warn('[chat] Could not restore draft:', e)
+  }
+})
+
+// Command autocomplete — triggers on the last token (text after last space)
+const currentToken = computed(() => {
+  const parts = input.value.split(' ')
+  return parts[parts.length - 1]
+})
+
+// Re-show autocomplete whenever the token changes (e.g. user keeps typing after Escape)
+watch(currentToken, () => { autocompleteHidden.value = false })
+
+const showAutocomplete = computed(() =>
+  !autocompleteHidden.value && currentToken.value.startsWith('/')
+)
+const query = computed(() => currentToken.value.slice(1).toLowerCase())
 const filteredCommands = computed(() => {
   if (!showAutocomplete.value || !commands.value) return []
   return commands.value
@@ -29,9 +67,14 @@ const filteredCommands = computed(() => {
 watch(filteredCommands, () => { autocompleteIndex.value = 0 })
 
 function selectCommand(name: string) {
-  input.value = '/' + name + ' '
-  inputRef.value?.focus()
+  const parts = input.value.split(' ')
+  parts[parts.length - 1] = '/' + name
+  input.value = parts.join(' ') + ' '
   autocompleteIndex.value = 0
+  nextTick(() => {
+    inputRef.value?.focus()
+    if (inputRef.value) autoResizeTextarea(inputRef.value)
+  })
 }
 
 // Auto-resize textarea
@@ -77,7 +120,7 @@ function onKeydown(e: KeyboardEvent) {
       return
     }
     if (e.key === 'Escape') {
-      input.value = ''
+      autocompleteHidden.value = true
       return
     }
   }

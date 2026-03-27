@@ -11,10 +11,16 @@ export function useTheme() {
 
   function init() {
     if (!import.meta.client) return
-    const saved = localStorage.getItem('theme')
-    const dark = saved !== null ? saved === 'dark' : true
-    isDark.value = dark
-    applyTheme(dark)
+    try {
+      const saved = localStorage.getItem('theme')
+      // Default to dark mode when no preference is saved
+      const dark = saved === null || saved === 'dark'
+      isDark.value = dark
+      applyTheme(dark)
+    } catch (e) {
+      console.warn('[useTheme] Could not read theme from localStorage:', e)
+      applyTheme(true)
+    }
   }
 
   function toggle() {
