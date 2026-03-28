@@ -38,6 +38,29 @@ export const listTrades = query({
   },
 })
 
+export const getDryState = query({
+  args: {},
+  handler: async (ctx) => {
+    const state = await ctx.db.query('polybotDryState').order('desc').first()
+    const openPositions = await ctx.db.query('polybotDryPositions')
+      .withIndex('by_status', q => q.eq('status', 'open'))
+      .collect()
+    const recentClosed = await ctx.db.query('polybotDryPositions')
+      .withIndex('by_openedAt')
+      .order('desc')
+      .filter(q => q.eq(q.field('status'), 'closed'))
+      .take(20)
+    const totalPnl = recentClosed.reduce((sum, p) => sum + (p.pnlUsd ?? 0), 0)
+    return {
+      virtualBalance: state?.virtualBalance ?? null,
+      updatedAt: state?.updatedAt ?? null,
+      openPositions,
+      recentClosed,
+      totalPnl,
+    }
+  },
+})
+
 const runArgs = {
   runId: v.string(),
   startedAt: v.number(),
@@ -145,7 +168,42 @@ export const upsertRuns = internalMutation({
   },
 })
 
-// Delete all polybot data from all three tables
+// Replace dry-run state: clear old positions, insert new ones, update balance
+export const replaceDryState = internalMutation({
+  args: {
+    virtualBalance: v.number(),
+    updatedAt: v.number(),
+    positions: v.array(v.object({
+      marketId: v.string(),
+      marketQuestion: v.optional(v.string()),
+      side: v.string(),
+      entryPrice: v.number(),
+      sizeUsd: v.number(),
+      openedAt: v.number(),
+      closedAt: v.optional(v.number()),
+      closePrice: v.optional(v.number()),
+      pnlUsd: v.optional(v.number()),
+      status: v.union(v.literal('open'), v.literal('closed')),
+    })),
+  },
+  handler: async (ctx, args) => {
+    // Replace all dry positions
+    const existing = await ctx.db.query('polybotDryPositions').collect()
+    for (const doc of existing) await ctx.db.delete(doc._id)
+    for (const pos of args.positions) {
+      await ctx.db.insert('polybotDryPositions', pos)
+    }
+    // Replace dry state (single row)
+    const states = await ctx.db.query('polybotDryState').collect()
+    for (const doc of states) await ctx.db.delete(doc._id)
+    await ctx.db.insert('polybotDryState', {
+      virtualBalance: args.virtualBalance,
+      updatedAt: args.updatedAt,
+    })
+  },
+})
+
+// Delete all polybot data from all tables
 export const clearAll = internalMutation({
   args: {},
   handler: async (ctx) => {
@@ -158,6 +216,12 @@ export const clearAll = internalMutation({
     const trades = await ctx.db.query('polybotTrades').collect()
     for (const doc of trades) await ctx.db.delete(doc._id)
 
-    return { runs: runs.length, markets: markets.length, trades: trades.length }
+    const positions = await ctx.db.query('polybotDryPositions').collect()
+    for (const doc of positions) await ctx.db.delete(doc._id)
+
+    const states = await ctx.db.query('polybotDryState').collect()
+    for (const doc of states) await ctx.db.delete(doc._id)
+
+    return { runs: runs.length, markets: markets.length, trades: trades.length, positions: positions.length }
   },
 })
