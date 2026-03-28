@@ -231,12 +231,14 @@ function formatTime(ts: number): string {
           </p>
           <MarkdownContent :content="msg.content" />
           <button
-            class="mt-2 text-gray-400 dark:text-gray-600 hover:text-yellow-500 dark:hover:text-yellow-400 active:text-yellow-400 text-xs block sm:hidden"
+            class="mt-2 text-gray-400 dark:text-gray-600 hover:text-yellow-500 dark:hover:text-yellow-400 active:text-yellow-400 focus-visible:ring-1 focus-visible:ring-yellow-400 outline-none text-xs block sm:hidden rounded px-1"
+            :aria-label="msg.pinned ? 'Unpin message' : 'Pin message'"
             @click="togglePin({ id: msg._id })"
           >{{ msg.pinned ? 'unpin' : '📌' }}</button>
           <button
-            class="absolute -top-2 opacity-0 hover:opacity-100 transition-opacity text-gray-400 dark:text-gray-600 hover:text-yellow-500 dark:hover:text-yellow-400 text-xs hidden sm:block"
+            class="absolute -top-2 opacity-40 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-yellow-400 outline-none transition-opacity text-gray-400 dark:text-gray-600 hover:text-yellow-500 dark:hover:text-yellow-400 text-xs hidden sm:block rounded px-0.5"
             :class="msg.role === 'user' ? 'right-2' : 'left-2'"
+            :aria-label="msg.pinned ? 'Unpin message' : 'Pin message'"
             @click="togglePin({ id: msg._id })"
           >📌</button>
         </div>
