@@ -187,13 +187,11 @@ export const replaceDryState = internalMutation({
     })),
   },
   handler: async (ctx, args) => {
-    // Replace all dry positions
     const existing = await ctx.db.query('polybotDryPositions').collect()
     for (const doc of existing) await ctx.db.delete(doc._id)
     for (const pos of args.positions) {
       await ctx.db.insert('polybotDryPositions', pos)
     }
-    // Replace dry state (single row)
     const states = await ctx.db.query('polybotDryState').collect()
     for (const doc of states) await ctx.db.delete(doc._id)
     await ctx.db.insert('polybotDryState', {
@@ -203,25 +201,29 @@ export const replaceDryState = internalMutation({
   },
 })
 
-// Delete all polybot data from all tables
+// Delete all polybot data — batched to avoid mutation timeout on large datasets.
+// Deletes up to 500 rows per table per call; invoke repeatedly until done.
 export const clearAll = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const runs = await ctx.db.query('polybotRuns').collect()
+    const BATCH = 500
+    const runs = await ctx.db.query('polybotRuns').take(BATCH)
     for (const doc of runs) await ctx.db.delete(doc._id)
 
-    const markets = await ctx.db.query('polybotTopMarkets').collect()
+    const markets = await ctx.db.query('polybotTopMarkets').take(BATCH)
     for (const doc of markets) await ctx.db.delete(doc._id)
 
-    const trades = await ctx.db.query('polybotTrades').collect()
+    const trades = await ctx.db.query('polybotTrades').take(BATCH)
     for (const doc of trades) await ctx.db.delete(doc._id)
 
-    const positions = await ctx.db.query('polybotDryPositions').collect()
+    const positions = await ctx.db.query('polybotDryPositions').take(BATCH)
     for (const doc of positions) await ctx.db.delete(doc._id)
 
-    const states = await ctx.db.query('polybotDryState').collect()
+    const states = await ctx.db.query('polybotDryState').take(BATCH)
     for (const doc of states) await ctx.db.delete(doc._id)
 
-    return { runs: runs.length, markets: markets.length, trades: trades.length, positions: positions.length }
+    const deleted = runs.length + markets.length + trades.length + positions.length + states.length
+    const remaining = deleted === BATCH * 5 // heuristic: might be more
+    return { deleted, callAgainIfTrue: remaining }
   },
 })
