@@ -169,6 +169,21 @@ const pushPolybotRuns = httpAction(async (ctx, request) => {
   return new Response(JSON.stringify({ ok: true, count: body.length }), { status: 200, headers: { 'Content-Type': 'application/json' } })
 })
 
+const pushPolybotDryState = httpAction(async (ctx, request) => {
+  const err = checkSecret(request)
+  if (err) return err
+  const body = await request.json().catch(() => null)
+  if (!body || typeof body.virtualBalance !== 'number') {
+    return new Response(JSON.stringify({ error: 'Missing virtualBalance' }), { status: 400 })
+  }
+  await ctx.runMutation(internal.polybot.replaceDryState, {
+    virtualBalance: body.virtualBalance,
+    updatedAt: body.updatedAt ?? Date.now(),
+    positions: body.positions ?? [],
+  })
+  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+})
+
 const clearPolybotData = httpAction(async (ctx, request) => {
   const err = checkSecret(request)
   if (err) return err
@@ -212,6 +227,7 @@ http.route({ path: '/getTasks', method: 'GET', handler: getTasks })
 http.route({ path: '/markTaskDone', method: 'POST', handler: markTaskDone })
 http.route({ path: '/pushPolybotRun', method: 'POST', handler: pushPolybotRun })
 http.route({ path: '/pushPolybotRuns', method: 'POST', handler: pushPolybotRuns })
+http.route({ path: '/pushPolybotDryState', method: 'POST', handler: pushPolybotDryState })
 http.route({ path: '/clearPolybotData', method: 'POST', handler: clearPolybotData })
 http.route({ path: '/pushChatMessage', method: 'POST', handler: pushChatMessage })
 http.route({ path: '/clearChatMessages', method: 'POST', handler: clearChatMessages })

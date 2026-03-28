@@ -101,4 +101,26 @@ export default defineSchema({
     timestamp: v.number(),
     success: v.boolean(),
   }).index('by_runId', ['runId']).index('by_timestamp', ['timestamp']),
+
+  // Dry-run virtual balance (single row, replaced on each sync)
+  polybotDryState: defineTable({
+    virtualBalance: v.number(),
+    updatedAt: v.number(),
+  }),
+
+  // Dry-run open and recently closed positions
+  polybotDryPositions: defineTable({
+    marketId: v.string(),
+    marketQuestion: v.optional(v.string()),
+    side: v.string(),
+    entryPrice: v.number(),
+    sizeUsd: v.number(),
+    openedAt: v.number(),
+    closedAt: v.optional(v.number()),
+    closePrice: v.optional(v.number()),
+    pnlUsd: v.optional(v.number()),
+    status: v.union(v.literal('open'), v.literal('closed')),
+  })
+    .index('by_status', ['status'])
+    .index('by_openedAt', ['openedAt']),
 })
