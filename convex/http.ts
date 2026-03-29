@@ -140,6 +140,48 @@ const markTaskDone = httpAction(async (ctx, request) => {
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } })
 })
 
+const markTaskInProgress = httpAction(async (ctx, request) => {
+  const err = checkSecret(request)
+  if (err) return err
+  const body = await request.json().catch(() => null)
+  if (!body?.id) return new Response(JSON.stringify({ error: 'Missing id' }), { status: 400 })
+  await ctx.runMutation(internal.tasks.markInProgress, { id: body.id })
+  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+})
+
+const getTask = httpAction(async (ctx, request) => {
+  const err = checkSecret(request)
+  if (err) return err
+  const url = new URL(request.url)
+  const taskIdStr = url.searchParams.get('taskId')
+  if (!taskIdStr) return new Response(JSON.stringify({ error: 'Missing taskId' }), { status: 400 })
+  const taskId = parseInt(taskIdStr, 10)
+  if (isNaN(taskId)) return new Response(JSON.stringify({ error: 'Invalid taskId' }), { status: 400 })
+  const task = await ctx.runQuery(internal.tasks.getTaskInternal, { taskNumericId: taskId })
+  if (!task) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 })
+  return new Response(JSON.stringify(task), { status: 200, headers: { 'Content-Type': 'application/json' } })
+})
+
+const addTaskNote = httpAction(async (ctx, request) => {
+  const err = checkSecret(request)
+  if (err) return err
+  const body = await request.json().catch(() => null)
+  if (!body?.taskId || !body?.content) return new Response(JSON.stringify({ error: 'Missing taskId or content' }), { status: 400 })
+  await ctx.runMutation(internal.tasks.addNoteInternal, {
+    taskNumericId: body.taskId,
+    content: body.content,
+    author: 'claus',
+  })
+  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+})
+
+const migrateTasks = httpAction(async (ctx, request) => {
+  const err = checkSecret(request)
+  if (err) return err
+  const result = await ctx.runMutation(internal.tasks.migrate, {})
+  return new Response(JSON.stringify({ ok: true, ...result }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+})
+
 const pushPolybotRun = httpAction(async (ctx, request) => {
   const err = checkSecret(request)
   if (err) return err
@@ -225,6 +267,10 @@ http.route({ path: '/getMessages', method: 'GET', handler: getMessages })
 http.route({ path: '/markMessageProcessed', method: 'POST', handler: markMessageProcessed })
 http.route({ path: '/getTasks', method: 'GET', handler: getTasks })
 http.route({ path: '/markTaskDone', method: 'POST', handler: markTaskDone })
+http.route({ path: '/markTaskInProgress', method: 'POST', handler: markTaskInProgress })
+http.route({ path: '/getTask', method: 'GET', handler: getTask })
+http.route({ path: '/addTaskNote', method: 'POST', handler: addTaskNote })
+http.route({ path: '/migrateTasks', method: 'POST', handler: migrateTasks })
 http.route({ path: '/pushPolybotRun', method: 'POST', handler: pushPolybotRun })
 http.route({ path: '/pushPolybotRuns', method: 'POST', handler: pushPolybotRuns })
 http.route({ path: '/pushPolybotDryState', method: 'POST', handler: pushPolybotDryState })

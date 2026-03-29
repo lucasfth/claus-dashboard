@@ -51,15 +51,49 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index('by_name', ['name']),
 
-  tasks: defineTable({
+  // Auto-increment counters (e.g. taskId)
+  counters: defineTable({
     name: v.string(),
-    prompt: v.string(),
+    value: v.number(),
+  }).index('by_name', ['name']),
+
+  tasks: defineTable({
+    // Human-readable ID displayed as T-{taskId}. Auto-incremented via counters table.
+    taskId: v.optional(v.number()),
+    // Post-migration field names
+    title: v.optional(v.string()),
+    description: v.optional(v.string()),
+    // Legacy fields (kept for migration compat, removed post-migration)
+    name: v.optional(v.string()),
+    prompt: v.optional(v.string()),
     runAt: v.optional(v.number()),
-    status: v.union(v.literal('pending'), v.literal('done'), v.literal('cancelled')),
+    status: v.union(
+      v.literal('todo'),
+      v.literal('in_progress'),
+      v.literal('done'),
+      v.literal('archived'),
+      v.literal('cancelled'),
+      // Legacy status, migrated to 'todo'
+      v.literal('pending'),
+    ),
     createdAt: v.number(),
+    priority: v.optional(v.union(v.literal('low'), v.literal('medium'), v.literal('high'))),
+    labels: v.optional(v.array(v.string())),
+    githubLink: v.optional(v.string()),
+    movedToDoneAt: v.optional(v.number()),
   })
     .index('by_status', ['status'])
-    .index('by_createdAt', ['createdAt']),
+    .index('by_createdAt', ['createdAt'])
+    .index('by_taskId', ['taskId']),
+
+  // Activity notes on a task, appended by Lucas or Claus
+  taskNotes: defineTable({
+    taskId: v.id('tasks'),
+    content: v.string(),
+    author: v.union(v.literal('lucas'), v.literal('claus')),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index('by_taskId', ['taskId']),
 
   bridgetStatus: defineTable({
     lastSync: v.number(),
@@ -102,13 +136,11 @@ export default defineSchema({
     success: v.boolean(),
   }).index('by_runId', ['runId']).index('by_timestamp', ['timestamp']),
 
-  // Dry-run virtual balance (single row, replaced on each sync)
   polybotDryState: defineTable({
     virtualBalance: v.number(),
     updatedAt: v.number(),
   }),
 
-  // Dry-run open and recently closed positions
   polybotDryPositions: defineTable({
     marketId: v.string(),
     marketQuestion: v.optional(v.string()),
