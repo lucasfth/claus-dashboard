@@ -2,6 +2,9 @@
   "name": "claus-webinterface",
   "private": true,
   "type": "module",
+  "imports": {
+    "#internal/nuxt/paths": "./node_modules/@nuxt/nitro-server/dist/runtime/utils/paths.mjs"
+  },
   "scripts": {
     "dev": "nuxt dev",
     "codegen": "convex codegen",

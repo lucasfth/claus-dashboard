@@ -12,6 +12,20 @@ export const listForTask = query({
   },
 })
 
+// Accepts optional taskId so the Vue component can always call this query
+// without a conditional (nuxt-convex doesn't support 'skip' pattern).
+export const listForTaskOptional = query({
+  args: { taskId: v.optional(v.id('tasks')) },
+  handler: async (ctx, args) => {
+    if (!args.taskId) return []
+    return ctx.db
+      .query('taskNotes')
+      .withIndex('by_taskId', (q) => q.eq('taskId', args.taskId!))
+      .order('asc')
+      .collect()
+  },
+})
+
 export const add = mutation({
   args: {
     taskId: v.id('tasks'),

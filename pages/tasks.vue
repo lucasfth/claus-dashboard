@@ -7,49 +7,62 @@ definePageMeta({ middleware: 'auth' })
 // ── Queries & Mutations ───────────────────────────────────────────
 const allTasks = useConvexQuery(api.tasks.list, {})
 
-const selectedId = ref<Id<'tasks'> | null>(null)
-const taskNotes = useConvexQuery(
-  api.taskNotes.listForTask,
-  computed(() => selectedId.value ? { taskId: selectedId.value } : 'skip'),
+// Notes query uses optional taskId so it can always be called unconditionally.
+// nuxt-convex doesn't support the 'skip' pattern that React's useQuery does.
+const selectedId = ref<string | undefined>(undefined)
+const notesArgs = reactive<{ taskId: string | undefined }>({ taskId: undefined })
+watch(selectedId, (id) => { notesArgs.taskId = id }, { immediate: true })
+// Keep notes usable even if Convex generated types are temporarily stale in editor.
+const taskNotesApi = (api as any).taskNotes
+const taskNotes = useConvexQuery(taskNotesApi.listForTaskOptional, notesArgs)
+
+const safeTasks = computed(() =>
+  ((allTasks.value ?? []) as any[]).filter((t) => t && typeof t._id === 'string'),
+)
+const safeTaskNotes = computed(() =>
+  ((taskNotes.value ?? []) as any[]).filter((n) => n && typeof n._id === 'string'),
 )
 
 const createMut   = useConvexMutation(api.tasks.create)
 const statusMut   = useConvexMutation(api.tasks.updateStatus)
 const updateMut   = useConvexMutation(api.tasks.updateTask)
 const cancelMut   = useConvexMutation(api.tasks.cancel)
-const addNoteMut  = useConvexMutation(api.taskNotes.add)
-const editNoteMut = useConvexMutation(api.taskNotes.edit)
-const delNoteMut  = useConvexMutation(api.taskNotes.remove)
+const addNoteMut  = useConvexMutation(taskNotesApi.add)
+const editNoteMut = useConvexMutation(taskNotesApi.edit)
+const delNoteMut  = useConvexMutation(taskNotesApi.remove)
 
-// ── Columns ───────────────────────────────────────────────────────
+// ── Columns ─────────────────────────────────────────────────────
 const todo = computed(() =>
-  (allTasks.value ?? []).filter(t => t.status === 'todo' || t.status === 'pending')
+  safeTasks.value.filter(t => t.status === 'todo' || t.status === 'pending')
     .sort((a, b) => (a.runAt ?? a.createdAt) - (b.runAt ?? b.createdAt)),
 )
 const inProgress = computed(() =>
-  (allTasks.value ?? []).filter(t => t.status === 'in_progress')
+  safeTasks.value.filter(t => t.status === 'in_progress')
     .sort((a, b) => b.createdAt - a.createdAt),
 )
 const done = computed(() =>
-  (allTasks.value ?? []).filter(t => t.status === 'done')
+  safeTasks.value.filter(t => t.status === 'done')
     .sort((a, b) => (b.movedToDoneAt ?? b.createdAt) - (a.movedToDoneAt ?? a.createdAt)),
 )
 
-const COLUMNS = [
-  { key: 'todo',        label: 'Todo',        tasks: todo,       accentBorder: 'border-yellow-400/50 dark:border-yellow-600/30' },
-  { key: 'in_progress', label: 'In Progress', tasks: inProgress, accentBorder: 'border-blue-400/50 dark:border-blue-600/30' },
-  { key: 'done',        label: 'Done',        tasks: done,       accentBorder: 'border-green-400/50 dark:border-green-600/30' },
-]
+const COLUMNS = computed(() => [
+  { key: 'todo',        label: 'Todo',        tasks: todo.value,       accentBorder: 'border-yellow-400/50 dark:border-yellow-600/30' },
+  { key: 'in_progress', label: 'In Progress', tasks: inProgress.value, accentBorder: 'border-blue-400/50 dark:border-blue-600/30' },
+  { key: 'done',        label: 'Done',        tasks: done.value,       accentBorder: 'border-green-400/50 dark:border-green-600/30' },
+])
 
 // ── Selected task ─────────────────────────────────────────────────
 const selectedTask = computed(() =>
-  selectedId.value ? (allTasks.value ?? []).find(t => t._id === selectedId.value) ?? null : null,
+  selectedId.value ? safeTasks.value.find(t => t._id === selectedId.value) ?? null : null,
 )
 
-function openTask(task: any) { selectedId.value = task._id }
+function openTask(task: any) {
+  if (!task?._id) return
+  selectedId.value = task._id
+}
 
 function closeModal() {
-  selectedId.value = null
+  selectedId.value = undefined
   editing.value = false
   noteText.value = ''
   editNoteId.value = null
@@ -58,10 +71,11 @@ function closeModal() {
 }
 
 // ── Drag & drop ───────────────────────────────────────────────────
-const draggingId  = ref<Id<'tasks'> | null>(null)
+const draggingId  = ref<string | null>(null)
 const dragOverCol = ref<string | null>(null)
 
 function onDragStart(e: DragEvent, task: any) {
+  if (!task?._id) return
   draggingId.value = task._id
   e.dataTransfer?.setData('text/plain', task._id)
 }
@@ -73,9 +87,9 @@ function onDragEnd() {
 
 async function onDrop(targetStatus: string) {
   if (!draggingId.value) return
-  const task = (allTasks.value ?? []).find(t => t._id === draggingId.value)
+  const task = safeTasks.value.find(t => t._id === draggingId.value)
   if (task && task.status !== targetStatus) {
-    await statusMut({ id: draggingId.value, status: targetStatus as any })
+    await statusMut({ id: draggingId.value as Id<'tasks'>, status: targetStatus as any })
   }
   draggingId.value = null
   dragOverCol.value = null
@@ -120,6 +134,17 @@ const editPriority = ref('')
 const editLabels   = ref('')
 const editGhLink   = ref('')
 const saving       = ref(false)
+const scheduleError = ref('')
+
+const MIN_SCHEDULE_LEAD_MS = 5 * 60 * 1000
+
+function getScheduleError(runAtMs?: number) {
+  if (!runAtMs) return ''
+  if (runAtMs - Date.now() < MIN_SCHEDULE_LEAD_MS) {
+    return 'Scheduled time must be at least 5 minutes in the future.'
+  }
+  return ''
+}
 
 function startEdit() {
   const t = selectedTask.value
@@ -130,15 +155,32 @@ function startEdit() {
   editPriority.value = t.priority ?? ''
   editLabels.value   = t.labels?.join(', ') ?? ''
   editGhLink.value   = t.githubLink ?? ''
+  scheduleError.value = getScheduleError(t.runAt)
   editing.value = true
 }
 
+watch(editRunAt, (value) => {
+  const parsed = value ? new Date(value).getTime() : undefined
+  scheduleError.value = getScheduleError(parsed)
+})
+
 async function saveEdit() {
   if (!selectedId.value || saving.value) return
+
+  const selected = selectedTask.value
+  const nextRunAt = editRunAt.value ? new Date(editRunAt.value).getTime() : selected?.runAt
+  if (selected?.status === 'todo') {
+    const err = getScheduleError(nextRunAt)
+    if (err) {
+      scheduleError.value = err
+      return
+    }
+  }
+
   saving.value = true
   try {
     await updateMut({
-      id: selectedId.value,
+      id: selectedId.value as Id<'tasks'>,
       title: editTitle.value.trim(),
       description: editDesc.value.trim(),
       runAt: editRunAt.value ? new Date(editRunAt.value).getTime() : undefined,
@@ -155,16 +197,16 @@ async function saveEdit() {
 // ── Status from panel ─────────────────────────────────────────────
 async function changeStatus(status: string) {
   if (!selectedId.value) return
-  await statusMut({ id: selectedId.value, status: status as any })
+  await statusMut({ id: selectedId.value as Id<'tasks'>, status: status as any })
 }
 
 // ── Cancel ────────────────────────────────────────────────────────
-const confirmCancelId = ref<Id<'tasks'> | null>(null)
+const confirmCancelId = ref<string | null>(null)
 
-async function handleCancel(id: Id<'tasks'>, e?: Event) {
+async function handleCancel(id: string, e?: Event) {
   e?.stopPropagation()
   if (confirmCancelId.value !== id) { confirmCancelId.value = id; return }
-  await cancelMut({ id })
+  await cancelMut({ id: id as Id<'tasks'> })
   confirmCancelId.value = null
   if (selectedId.value === id) closeModal()
 }
@@ -172,16 +214,16 @@ async function handleCancel(id: Id<'tasks'>, e?: Event) {
 // ── Notes ─────────────────────────────────────────────────────────
 const noteText     = ref('')
 const addingNote   = ref(false)
-const editNoteId   = ref<Id<'taskNotes'> | null>(null)
+const editNoteId   = ref<string | null>(null)
 const editNoteText = ref('')
 const savingNote   = ref(false)
-const confirmDelId = ref<Id<'taskNotes'> | null>(null)
+const confirmDelId = ref<string | null>(null)
 
 async function submitNote() {
   if (!selectedId.value || !noteText.value.trim() || addingNote.value) return
   addingNote.value = true
   try {
-    await addNoteMut({ taskId: selectedId.value, content: noteText.value.trim(), author: 'lucas' })
+    await addNoteMut({ taskId: selectedId.value as Id<'tasks'>, content: noteText.value.trim(), author: 'lucas' })
     noteText.value = ''
   } finally {
     addingNote.value = false
@@ -197,16 +239,16 @@ async function saveNote() {
   if (!editNoteId.value || savingNote.value) return
   savingNote.value = true
   try {
-    await editNoteMut({ id: editNoteId.value, content: editNoteText.value.trim() })
+    await editNoteMut({ id: editNoteId.value as Id<'taskNotes'>, content: editNoteText.value.trim() })
     editNoteId.value = null
   } finally {
     savingNote.value = false
   }
 }
 
-async function deleteNote(id: Id<'taskNotes'>) {
+async function deleteNote(id: string) {
   if (confirmDelId.value !== id) { confirmDelId.value = id; return }
-  await delNoteMut({ id })
+  await delNoteMut({ id: id as Id<'taskNotes'> })
   confirmDelId.value = null
 }
 
@@ -433,7 +475,16 @@ const STATUS_OPTIONS = [
                   <option value="medium">medium</option>
                   <option value="low">low</option>
                 </select>
-                <input v-model="editRunAt" type="datetime-local" class="input flex-1 [color-scheme:light] dark:[color-scheme:dark]" />
+                <div class="relative flex-1">
+                  <input v-model="editRunAt" type="datetime-local" class="input w-full [color-scheme:light] dark:[color-scheme:dark]" />
+                  <div
+                    v-if="scheduleError"
+                    class="absolute left-0 top-full mt-1 z-10 rounded-md border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/80 px-2 py-1 text-[11px] text-red-700 dark:text-red-300 shadow"
+                    role="alert"
+                  >
+                    {{ scheduleError }}
+                  </div>
+                </div>
               </div>
               <input v-model="editLabels" placeholder="labels, comma-separated" class="input w-full" />
               <input v-model="editGhLink" placeholder="GitHub link" class="input w-full" />
@@ -451,11 +502,11 @@ const STATUS_OPTIONS = [
                 <div v-for="i in 2" :key="i" class="h-14 rounded bg-gray-100 dark:bg-gray-900/50 animate-pulse" />
               </div>
 
-              <p v-else-if="(taskNotes as any[]).length === 0" class="text-xs text-gray-400 dark:text-gray-700 mb-3">No notes yet.</p>
+              <p v-else-if="safeTaskNotes.length === 0" class="text-xs text-gray-400 dark:text-gray-700 mb-3">No notes yet.</p>
 
               <div v-else class="space-y-3 mb-3">
                 <div
-                  v-for="note in (taskNotes as any[])"
+                  v-for="note in safeTaskNotes"
                   :key="note._id"
                   class="rounded-lg border border-gray-200 dark:border-gray-800/60 px-3 py-2.5"
                 >

@@ -18,6 +18,7 @@ import type * as http from "../http.js";
 import type * as jobs from "../jobs.js";
 import type * as messages from "../messages.js";
 import type * as polybot from "../polybot.js";
+import type * as taskNotes from "../taskNotes.js";
 import type * as tasks from "../tasks.js";
 
 import type {
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   jobs: typeof jobs;
   messages: typeof messages;
   polybot: typeof polybot;
+  taskNotes: typeof taskNotes;
   tasks: typeof tasks;
 }>;
 
