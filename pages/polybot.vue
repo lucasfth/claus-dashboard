@@ -6,6 +6,7 @@ definePageMeta({ middleware: 'auth' })
 const runs = useConvexQuery(api.polybot.listRuns, {})
 const topMarkets = useConvexQuery(api.polybot.latestTopMarkets, {})
 const trades = useConvexQuery(api.polybot.listTrades, {})
+const dryState = useConvexQuery(api.polybot.getDryState, {})
 
 function relativeTime(ts: number): string {
   const diff = Date.now() - ts
@@ -28,14 +29,15 @@ const stats = computed(() => {
   return { totalRuns, totalAnalyses, totalTrades, lastRun }
 })
 
+// P&L from dry-run position data (accurate) — not from trade table (inaccurate:
+// dry-run sells are recorded with sizeUsd=0 since no real order is placed)
 const pnl = computed(() => {
-  if (!trades.value) return null
-  const isBuy = (side: string) => side.toLowerCase() === 'buy' || side.toLowerCase().includes('yes')
-  const isSell = (side: string) => side.toLowerCase() === 'sell' || side.toLowerCase().includes('no')
-  const deployed = trades.value.filter(t => t.success && isBuy(t.side)).reduce((s, t) => s + t.sizeUsd, 0)
-  const returned = trades.value.filter(t => t.success && isSell(t.side)).reduce((s, t) => s + t.sizeUsd, 0)
-  const net = returned - deployed
-  return { deployed, returned, net }
+  if (!dryState.value) return null
+  const realizedPnl = dryState.value.totalPnl ?? 0
+  const virtualBalance = dryState.value.virtualBalance ?? null
+  const openCount = dryState.value.openPositions?.length ?? 0
+  const openDeployed = dryState.value.openPositions?.reduce((s: number, p: any) => s + p.sizeUsd, 0) ?? 0
+  return { realizedPnl, virtualBalance, openCount, openDeployed }
 })
 
 function scoreColor(score: number): string {
@@ -106,27 +108,27 @@ function annotationStyle(ann: string): string {
           {{ stats?.lastRun ? relativeTime(stats.lastRun.startedAt * 1000) : '\u2014' }}
         </p>
       </div>
-      <!-- P&L stat -->
+      <!-- P&L stat — reads from getDryState (accurate closed-position pnlUsd) -->
       <div
         class="rounded-lg border px-4 py-3"
-        :class="pnl && pnl.net > 0
+        :class="pnl && pnl.realizedPnl > 0
           ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800/40'
-          : pnl && pnl.net < 0
+          : pnl && pnl.realizedPnl < 0
             ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/40'
             : 'bg-white dark:bg-gray-900/30 border-gray-200 dark:border-gray-800/50'"
       >
-        <p class="text-xs text-gray-500 dark:text-gray-600 mb-1">Sim P&amp;L</p>
+        <p class="text-xs text-gray-500 dark:text-gray-600 mb-1">Realized P&amp;L</p>
         <p
           class="text-2xl font-semibold font-mono"
-          :class="pnl && pnl.net > 0 ? 'text-green-600 dark:text-green-400' : pnl && pnl.net < 0 ? 'text-red-600 dark:text-red-400' : ''"
+          :class="pnl && pnl.realizedPnl > 0 ? 'text-green-600 dark:text-green-400' : pnl && pnl.realizedPnl < 0 ? 'text-red-600 dark:text-red-400' : ''"
         >
           <template v-if="pnl">
-            {{ pnl.net >= 0 ? '+' : '' }}${{ pnl.net.toFixed(2) }}
+            {{ pnl.realizedPnl >= 0 ? '+' : '' }}${{ pnl.realizedPnl.toFixed(2) }}
           </template>
           <template v-else>\u2014</template>
         </p>
         <p v-if="pnl" class="text-xs text-gray-500 dark:text-gray-600 mt-0.5">
-          in ${{ pnl.deployed.toFixed(2) }} / out ${{ pnl.returned.toFixed(2) }}
+          bal ${{ pnl.virtualBalance != null ? pnl.virtualBalance.toFixed(2) : '—' }} &middot; {{ pnl.openCount }} open (${{ pnl.openDeployed.toFixed(2) }})
         </p>
       </div>
     </div>
