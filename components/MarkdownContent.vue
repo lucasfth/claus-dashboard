@@ -84,6 +84,7 @@ watch(isDark, render)
 .md ul, .md ol { @apply pl-5 mb-2 space-y-0.5; }
 .md ul { list-style-type: disc; }
 .md ol { list-style-type: decimal; }
+.md { overflow-wrap: anywhere; }
 .md h1, .md h2, .md h3, .md h4 { @apply font-semibold mt-3 mb-1; }
 .md h1 { @apply text-lg; }
 .md h2 { @apply text-base; }
@@ -91,7 +92,7 @@ watch(isDark, render)
 .md a { @apply text-blue-600 dark:text-blue-400 underline; }
 .md blockquote { @apply border-l-2 border-gray-300 dark:border-gray-600 pl-3 text-gray-500 dark:text-gray-400 my-2 italic; }
 .md hr { @apply border-gray-200 dark:border-gray-700 my-3; }
-.md table { @apply w-full text-sm my-2 border-collapse; }
+.md table { @apply w-full text-sm my-2 border-collapse block overflow-x-auto; }
 .md th { @apply border border-gray-200 dark:border-gray-700 px-2 py-1 bg-gray-100 dark:bg-gray-800 font-semibold text-left; }
 .md td { @apply border border-gray-200 dark:border-gray-700 px-2 py-1; }
 

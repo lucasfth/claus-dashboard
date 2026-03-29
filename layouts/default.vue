@@ -18,13 +18,13 @@ async function signOut() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-white overflow-x-hidden">
+  <div class="min-h-screen bg-gradient-to-b from-white via-white to-gray-50/80 dark:from-[#0a0a0a] dark:via-[#0a0a0a] dark:to-[#060606] text-gray-900 dark:text-white overflow-x-clip">
     <!-- Top bar (desktop) -->
-    <nav v-if="loggedIn" class="hidden sm:flex border-b border-gray-200 dark:border-gray-800 sticky top-0 z-20 bg-white dark:bg-[#0a0a0a]">
-      <div class="w-full max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
+    <nav v-if="loggedIn" class="hidden md:flex border-b border-gray-200/90 dark:border-gray-800 sticky top-0 z-20 bg-white/90 dark:bg-[#0a0a0a]/90 backdrop-blur">
+      <div class="w-full max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
         <div class="flex items-center gap-5">
           <span class="font-semibold text-sm tracking-wide shrink-0">&#x26A1; Claus</span>
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-3 lg:gap-4 flex-wrap">
             <NuxtLink
               v-for="link in nav"
               :key="link.href"
@@ -48,7 +48,7 @@ async function signOut() {
     </nav>
 
     <!-- Mobile top bar -->
-    <div v-if="loggedIn" class="sm:hidden sticky top-0 z-20 bg-white dark:bg-[#0a0a0a] border-b border-gray-200 dark:border-gray-800 px-4 h-12 flex items-center justify-between">
+    <div v-if="loggedIn" class="md:hidden sticky top-0 z-20 bg-white/90 dark:bg-[#0a0a0a]/90 backdrop-blur border-b border-gray-200 dark:border-gray-800 px-4 h-12 flex items-center justify-between">
       <span class="font-semibold text-sm tracking-wide">&#x26A1; Claus</span>
       <div class="flex items-center gap-3">
         <button
@@ -61,12 +61,12 @@ async function signOut() {
     </div>
 
     <!-- Main content -->
-    <main class="w-full max-w-4xl mx-auto px-4 py-6 pb-24 sm:pb-8">
+    <main class="w-full max-w-5xl mx-auto px-4 py-5 md:py-6 pb-24 md:pb-8">
       <slot />
     </main>
 
     <!-- Bottom nav (mobile) -->
-    <nav v-if="loggedIn" class="sm:hidden fixed bottom-0 left-0 right-0 z-20 bg-gray-50 dark:bg-[#0d0d0d] border-t border-gray-200 dark:border-gray-800">
+    <nav v-if="loggedIn" class="md:hidden fixed bottom-0 left-0 right-0 z-20 bg-gray-50/95 dark:bg-[#0d0d0d]/95 backdrop-blur border-t border-gray-200 dark:border-gray-800">
       <div class="flex">
         <NuxtLink
           v-for="link in nav"

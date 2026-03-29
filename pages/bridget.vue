@@ -129,15 +129,15 @@ function isEditing(name: string, field: EditField) {
         <span v-else class="text-xs text-gray-400 dark:text-gray-600">never</span>
       </div>
       <div v-if="status" class="grid grid-cols-3 gap-4 pt-2 border-t border-gray-200 dark:border-gray-800">
-        <div class="text-center">
+        <div class="text-center sm:text-center">
           <div class="text-2xl font-mono tabular-nums">{{ status.activitiesPushed ?? '\u2014' }}</div>
           <div class="text-xs text-gray-500 mt-1">activities</div>
         </div>
-        <div class="text-center">
+        <div class="text-center sm:text-center">
           <div class="text-2xl font-mono tabular-nums">{{ status.jobsPushed ?? '\u2014' }}</div>
           <div class="text-xs text-gray-500 mt-1">jobs</div>
         </div>
-        <div class="text-center">
+        <div class="text-center sm:text-center">
           <div class="text-2xl font-mono tabular-nums">{{ status.commandsPushed ?? '\u2014' }}</div>
           <div class="text-xs text-gray-500 mt-1">commands</div>
         </div>

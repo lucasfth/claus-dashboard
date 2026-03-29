@@ -10,7 +10,8 @@
     "codegen": "convex codegen",
     "build": "nuxt build",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "lint": "oxlint . .ts,.vue --fix"
   },
   "dependencies": {
     "convex": "^1.33.1",
@@ -24,6 +25,8 @@
   "devDependencies": {
     "@nuxtjs/tailwindcss": "^6.14.0",
     "@types/node": "^25.5.0",
+    "oxlint": "^1.57.0",
+    "playwright": "^1.58.2",
     "typescript": "^5.9.3"
   }
 }

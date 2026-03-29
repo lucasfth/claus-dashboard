@@ -1,27 +1,42 @@
-import type { ConvexClient } from 'convex/browser'
-import type { FunctionReference } from 'convex/server'
-import type { FunctionArgs, FunctionReturnType } from 'convex/server'
+import type { ConvexClient } from "convex/browser";
+import type { FunctionReference } from "convex/server";
+import type { FunctionArgs, FunctionReturnType } from "convex/server";
 
-export function useConvexQuery<T extends FunctionReference<'query'>>(
+export function useConvexQuery<T extends FunctionReference<"query">>(
   query: T,
   args: FunctionArgs<T>,
 ) {
-  const { $convex } = useNuxtApp()
-  const data = ref<FunctionReturnType<T> | undefined>(undefined)
+  const { $convex } = useNuxtApp();
+  const data = ref<FunctionReturnType<T> | undefined>(undefined);
 
-  let unsubscribe: ReturnType<ConvexClient['onUpdate']> | undefined
+  let unsubscribe: ReturnType<ConvexClient["onUpdate"]> | undefined;
 
-  onMounted(() => {
+  const subscribe = () => {
+    // Unsubscribe from previous subscription if it exists
+    unsubscribe?.();
+    // Re-subscribe with current args
     unsubscribe = ($convex as ConvexClient).onUpdate(
       query,
       args,
       (value: FunctionReturnType<T>) => {
-        data.value = value
+        data.value = value;
       },
-    )
-  })
+    );
+  };
 
-  onUnmounted(() => unsubscribe?.())
+  onMounted(() => {
+    subscribe();
+  });
 
-  return data
+  onUnmounted(() => unsubscribe?.());
+
+  // Re-subscribe whenever args change (e.g., when taskId in reactive object changes)
+  watch(
+    () => JSON.stringify(args),
+    () => {
+      subscribe();
+    },
+  );
+
+  return data;
 }

@@ -291,21 +291,21 @@ const STATUS_OPTIONS = [
 <template>
   <div>
     <!-- Header -->
-    <div class="mb-5 flex items-center justify-between">
-      <div>
+    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div class="min-w-0">
         <h1 class="text-xl font-semibold">Tasks</h1>
         <p class="text-xs text-gray-500 dark:text-gray-600 mt-0.5">
           Drag cards between columns &middot; click to open &middot; scheduled tasks run automatically
         </p>
       </div>
-      <button class="btn-ghost" @click="showCreate = !showCreate">+ new</button>
+      <button class="btn-ghost w-full sm:w-auto" @click="showCreate = !showCreate">+ new</button>
     </div>
 
     <!-- Create form -->
     <div v-if="showCreate" class="mb-6 rounded-lg bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800/50 p-4 space-y-3">
-      <div class="flex gap-2">
+      <div class="flex flex-col sm:flex-row gap-2">
         <input v-model="newTitle" placeholder="Title*" class="input flex-1" />
-        <select v-model="newPriority" class="input w-28">
+        <select v-model="newPriority" class="input sm:w-28">
           <option value="">priority</option>
           <option value="high">high</option>
           <option value="medium">medium</option>
@@ -320,7 +320,7 @@ const STATUS_OPTIONS = [
         @keydown.meta.enter="submitCreate"
         @keydown.ctrl.enter="submitCreate"
       />
-      <div class="flex gap-2">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <input v-model="newRunAt" type="datetime-local" class="input flex-1 [color-scheme:light] dark:[color-scheme:dark]" />
         <input v-model="newLabels" placeholder="labels, comma-separated" class="input flex-1" />
       </div>
@@ -334,7 +334,7 @@ const STATUS_OPTIONS = [
     </div>
 
     <!-- Loading skeleton -->
-    <div v-if="allTasks === undefined" class="grid grid-cols-3 gap-4">
+    <div v-if="allTasks === undefined" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div v-for="i in 3" :key="i" class="space-y-2">
         <div class="h-4 w-20 rounded bg-gray-200 dark:bg-gray-800 animate-pulse mb-3" />
         <div v-for="j in 3" :key="j" class="h-20 rounded-lg bg-gray-200 dark:bg-gray-900/50 animate-pulse" />
@@ -342,11 +342,11 @@ const STATUS_OPTIONS = [
     </div>
 
     <!-- Kanban board -->
-    <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+    <div v-else class="flex md:grid md:grid-cols-3 gap-3 md:gap-4 items-start overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 snap-x md:snap-none snap-mandatory">
       <div
         v-for="col in COLUMNS"
         :key="col.key"
-        class="flex flex-col gap-2 rounded-lg p-2 border transition-colors min-h-24"
+        class="flex flex-col gap-2 rounded-lg p-2 border transition-colors min-h-24 w-[82vw] sm:w-[360px] md:w-auto md:min-w-0 shrink-0 snap-start"
         :class="dragOverCol === col.key
           ? 'bg-gray-100 dark:bg-gray-800/40 border-gray-400 dark:border-gray-600'
           : 'bg-gray-50/50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800/30'"
@@ -416,8 +416,8 @@ const STATUS_OPTIONS = [
         class="fixed inset-0 z-50 flex"
         @keydown.esc.window="closeModal"
       >
-        <div class="flex-1 bg-black/20 dark:bg-black/40" @click="closeModal" />
-        <div class="w-full max-w-lg bg-white dark:bg-gray-950 border-l border-gray-200 dark:border-gray-800 flex flex-col shadow-2xl overflow-hidden">
+        <div class="hidden sm:block flex-1 bg-black/20 dark:bg-black/40" @click="closeModal" />
+        <div class="w-full sm:max-w-lg bg-white dark:bg-gray-950 sm:border-l border-gray-200 dark:border-gray-800 flex flex-col shadow-2xl overflow-hidden">
 
           <!-- Panel header -->
           <div class="flex items-center gap-2 px-5 py-3 border-b border-gray-200 dark:border-gray-800 shrink-0">
@@ -454,7 +454,7 @@ const STATUS_OPTIONS = [
                   :href="selectedTask.githubLink"
                   target="_blank"
                   rel="noopener"
-                  class="text-blue-500 hover:underline truncate"
+                  class="text-blue-500 hover:underline break-all"
                   @click.stop
                 >🔗 {{ selectedTask.githubLink }}</a>
               </div>
@@ -468,7 +468,7 @@ const STATUS_OPTIONS = [
             <div v-else class="space-y-3">
               <input v-model="editTitle" placeholder="Title" class="input w-full" />
               <textarea v-model="editDesc" placeholder="Description" rows="4" class="input w-full font-mono text-xs resize-none" />
-              <div class="flex gap-2">
+              <div class="flex flex-col sm:flex-row gap-2">
                 <select v-model="editPriority" class="input flex-1">
                   <option value="">no priority</option>
                   <option value="high">high</option>

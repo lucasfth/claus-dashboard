@@ -35,7 +35,7 @@ function copyAllCommands() {
 <template>
   <div>
     <div class="mb-6">
-      <div class="flex items-center justify-between gap-4">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
           <h1 class="text-xl font-semibold">Slash Commands</h1>
           <p class="text-xs text-gray-500 dark:text-gray-600 mt-1">All commands and skills available to Claus in the current session.</p>
@@ -43,7 +43,7 @@ function copyAllCommands() {
         <button
           v-if="sorted.length > 0"
           :disabled="copied"
-          class="px-4 py-1.5 rounded text-sm font-medium transition-all disabled:opacity-50 border shrink-0"
+          class="px-4 py-1.5 rounded text-sm font-medium transition-all disabled:opacity-50 border shrink-0 w-full sm:w-auto"
           :class="copied
             ? 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 border-green-300 dark:border-green-800/50'
             : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 border-gray-300 dark:border-gray-700/50'"

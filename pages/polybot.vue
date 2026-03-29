@@ -144,7 +144,8 @@ function annotationStyle(ann: string): string {
       <p v-else-if="topMarkets.length === 0" class="text-gray-500 dark:text-gray-600 text-sm">No market data yet.</p>
 
       <div v-else class="rounded-lg bg-white dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800/50 overflow-hidden">
-        <table class="w-full text-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[640px] text-sm">
           <thead>
             <tr class="border-b border-gray-200 dark:border-gray-800/50">
               <th class="text-left px-4 py-2 text-xs text-gray-500 dark:text-gray-600 font-medium">Market</th>
@@ -195,7 +196,8 @@ function annotationStyle(ann: string): string {
               <tr v-else class="border-b border-gray-100 dark:border-gray-800/30 last:border-0"><td colspan="4" class="pb-1" /></tr>
             </template>
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -210,7 +212,8 @@ function annotationStyle(ann: string): string {
       <p v-else-if="trades.length === 0" class="text-gray-500 dark:text-gray-600 text-sm">No trades yet.</p>
 
       <div v-else class="rounded-lg bg-white dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800/50 overflow-hidden">
-        <table class="w-full text-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[620px] text-sm">
           <thead>
             <tr class="border-b border-gray-200 dark:border-gray-800/50">
               <th class="text-left px-4 py-2 text-xs text-gray-500 dark:text-gray-600 font-medium">Market</th>
@@ -235,7 +238,8 @@ function annotationStyle(ann: string): string {
               <td class="px-4 py-2.5 text-xs text-gray-400 dark:text-gray-600 text-right whitespace-nowrap">{{ relativeTime(t.timestamp * 1000) }}</td>
             </tr>
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -253,7 +257,7 @@ function annotationStyle(ann: string): string {
         <div
           v-for="run in runs"
           :key="run._id"
-          class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800/50"
+          class="flex items-start sm:items-center gap-3 px-4 py-3 rounded-lg bg-white dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800/50"
         >
           <span
             class="inline-block text-xs px-2 py-0.5 rounded font-mono border shrink-0"
@@ -263,11 +267,11 @@ function annotationStyle(ann: string): string {
           >{{ run.dryRun ? 'dry' : 'live' }}</span>
 
           <div class="flex-1 min-w-0">
-            <div class="flex items-baseline gap-2">
+            <div class="flex flex-wrap items-baseline gap-2">
               <span class="text-xs font-mono text-gray-500 dark:text-gray-400">{{ shortRunId(run.runId) }}</span>
               <span class="text-xs text-gray-400 dark:text-gray-600">{{ relativeTime(run.startedAt * 1000) }}</span>
             </div>
-            <div class="flex gap-4 mt-0.5">
+            <div class="flex flex-wrap gap-x-4 gap-y-1 mt-0.5">
               <span class="text-xs text-gray-400 dark:text-gray-600">{{ run.totalMarkets }} markets</span>
               <span class="text-xs text-gray-400 dark:text-gray-600">{{ run.analysesGenerated }} analyses</span>
               <span class="text-xs text-gray-400 dark:text-gray-600">{{ run.tradesExecuted }} trades</span>
