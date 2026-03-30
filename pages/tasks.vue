@@ -26,6 +26,7 @@ const safeTaskNotes = computed(() =>
 const createMut   = useConvexMutation(api.tasks.create)
 const statusMut   = useConvexMutation(api.tasks.updateStatus)
 const updateMut   = useConvexMutation(api.tasks.updateTask)
+const clearRunAtMut = useConvexMutation((api.tasks as any).clearRunAt)
 const cancelMut   = useConvexMutation(api.tasks.cancel)
 const addNoteMut  = useConvexMutation(taskNotesApi.add)
 const editNoteMut = useConvexMutation(taskNotesApi.edit)
@@ -130,6 +131,7 @@ const editing      = ref(false)
 const editTitle    = ref('')
 const editDesc     = ref('')
 const editRunAt    = ref('')
+const initialEditRunAt = ref('')
 const editPriority = ref('')
 const editLabels   = ref('')
 const editGhLink   = ref('')
@@ -152,6 +154,7 @@ function startEdit() {
   editTitle.value    = t.title ?? (t as any).name ?? ''
   editDesc.value     = t.description ?? (t as any).prompt ?? ''
   editRunAt.value    = t.runAt ? toDatetimeLocal(t.runAt) : ''
+  initialEditRunAt.value = editRunAt.value
   editPriority.value = t.priority ?? ''
   editLabels.value   = t.labels?.join(', ') ?? ''
   editGhLink.value   = t.githubLink ?? ''
@@ -168,8 +171,8 @@ async function saveEdit() {
   if (!selectedId.value || saving.value) return
 
   const selected = selectedTask.value
-  const nextRunAt = editRunAt.value ? new Date(editRunAt.value).getTime() : selected?.runAt
-  if (selected?.status === 'todo') {
+  const nextRunAt = editRunAt.value ? new Date(editRunAt.value).getTime() : undefined
+  if (selected?.status === 'todo' && nextRunAt) {
     const err = getScheduleError(nextRunAt)
     if (err) {
       scheduleError.value = err
@@ -179,6 +182,12 @@ async function saveEdit() {
 
   saving.value = true
   try {
+    const shouldClearRunAt = !!initialEditRunAt.value && !editRunAt.value
+
+    if (shouldClearRunAt) {
+      await clearRunAtMut({ id: selectedId.value as Id<'tasks'> })
+    }
+
     await updateMut({
       id: selectedId.value as Id<'tasks'>,
       title: editTitle.value.trim(),
@@ -188,6 +197,7 @@ async function saveEdit() {
       labels: editLabels.value ? editLabels.value.split(',').map(l => l.trim()).filter(Boolean) : undefined,
       githubLink: editGhLink.value.trim() || undefined,
     })
+
     editing.value = false
   } finally {
     saving.value = false
@@ -477,6 +487,14 @@ const STATUS_OPTIONS = [
                 </select>
                 <div class="relative flex-1">
                   <input v-model="editRunAt" type="datetime-local" class="input w-full [color-scheme:light] dark:[color-scheme:dark]" />
+                  <button
+                    v-if="editRunAt"
+                    type="button"
+                    class="mt-1 text-[11px] text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                    @click="editRunAt = ''"
+                  >
+                    clear date
+                  </button>
                   <div
                     v-if="scheduleError"
                     class="absolute left-0 top-full mt-1 z-10 rounded-md border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/80 px-2 py-1 text-[11px] text-red-700 dark:text-red-300 shadow"

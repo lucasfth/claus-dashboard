@@ -150,6 +150,18 @@ export const updateTask = mutation({
   },
 });
 
+export const clearRunAt = mutation({
+  args: { id: v.id("tasks") },
+  handler: async (ctx, args) => {
+    const task = await ctx.db.get(args.id);
+    if (!task) throw new Error("Task not found");
+    if (task.status === "archived") {
+      throw new Error("Cannot edit archived tasks");
+    }
+    await ctx.db.patch(args.id, { runAt: undefined });
+  },
+});
+
 export const cancel = mutation({
   args: { id: v.id("tasks") },
   handler: async (ctx, args) => {
