@@ -29,5 +29,8 @@
     "oxlint": "^1.57.0",
     "playwright": "^1.58.2",
     "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "estree-walker": "^3.0.3"
   }
 }
