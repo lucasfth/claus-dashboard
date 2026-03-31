@@ -1,11 +1,13 @@
 import { mutation, query, internalMutation, internalQuery } from './_generated/server'
 import { internal } from './_generated/api'
 import { v } from 'convex/values'
+import { requireAuth } from './lib/requireAuth'
 
 // Public queries for the Vue page
 export const listRuns = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuth(ctx)
     return await ctx.db.query('polybotRuns')
       .withIndex('by_startedAt')
       .order('desc')
@@ -16,6 +18,7 @@ export const listRuns = query({
 export const latestTopMarkets = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuth(ctx)
     const latestRun = await ctx.db.query('polybotRuns')
       .withIndex('by_startedAt')
       .order('desc')
@@ -31,6 +34,7 @@ export const latestTopMarkets = query({
 export const listTrades = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuth(ctx)
     return await ctx.db.query('polybotTrades')
       .withIndex('by_timestamp')
       .order('desc')
@@ -41,6 +45,7 @@ export const listTrades = query({
 export const getDryState = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuth(ctx)
     const state = await ctx.db.query('polybotDryState').order('desc').first()
     const openPositions = await ctx.db.query('polybotDryPositions')
       .withIndex('by_status', q => q.eq('status', 'open'))

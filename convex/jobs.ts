@@ -1,9 +1,11 @@
 import { internalMutation, internalQuery, mutation, query } from './_generated/server'
 import { v } from 'convex/values'
+import { requireAuth } from './lib/requireAuth'
 
 export const list = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuth(ctx)
     return ctx.db.query('jobs').collect()
   },
 })
@@ -11,6 +13,7 @@ export const list = query({
 export const setSchedule = mutation({
   args: { name: v.string(), schedule: v.string() },
   handler: async (ctx, args) => {
+    await requireAuth(ctx)
     const existing = await ctx.db
       .query('jobs')
       .withIndex('by_name', q => q.eq('name', args.name))
@@ -24,6 +27,7 @@ export const setSchedule = mutation({
 export const setPrompt = mutation({
   args: { name: v.string(), prompt: v.string() },
   handler: async (ctx, args) => {
+    await requireAuth(ctx)
     const existing = await ctx.db
       .query('jobs')
       .withIndex('by_name', q => q.eq('name', args.name))

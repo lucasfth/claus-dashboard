@@ -1,9 +1,11 @@
 import { mutation, query } from './_generated/server'
 import { v } from 'convex/values'
+import { requireAuth } from './lib/requireAuth'
 
 export const listForTask = query({
   args: { taskId: v.id('tasks') },
   handler: async (ctx, args) => {
+    await requireAuth(ctx)
     return ctx.db
       .query('taskNotes')
       .withIndex('by_taskId', (q) => q.eq('taskId', args.taskId))
@@ -17,6 +19,7 @@ export const listForTask = query({
 export const listForTaskOptional = query({
   args: { taskId: v.optional(v.id('tasks')) },
   handler: async (ctx, args) => {
+    await requireAuth(ctx)
     if (!args.taskId) return []
     return ctx.db
       .query('taskNotes')
@@ -33,6 +36,7 @@ export const add = mutation({
     author: v.union(v.literal('lucas'), v.literal('claus')),
   },
   handler: async (ctx, args) => {
+    await requireAuth(ctx)
     const now = Date.now()
     return ctx.db.insert('taskNotes', {
       taskId: args.taskId,
@@ -50,6 +54,7 @@ export const edit = mutation({
     content: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireAuth(ctx)
     const note = await ctx.db.get(args.id)
     if (!note) throw new Error('Note not found')
     await ctx.db.patch(args.id, {
@@ -62,6 +67,7 @@ export const edit = mutation({
 export const remove = mutation({
   args: { id: v.id('taskNotes') },
   handler: async (ctx, args) => {
+    await requireAuth(ctx)
     await ctx.db.delete(args.id)
   },
 })

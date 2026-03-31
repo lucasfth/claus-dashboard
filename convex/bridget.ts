@@ -1,9 +1,11 @@
 import { internalMutation, query } from './_generated/server'
 import { v } from 'convex/values'
+import { requireAuth } from './lib/requireAuth'
 
 export const getStatus = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuth(ctx)
     return ctx.db.query('bridgetStatus').order('desc').first()
   },
 })
@@ -11,6 +13,7 @@ export const getStatus = query({
 export const getScheduledJobs = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuth(ctx)
     return ctx.db.query('jobs').collect()
   },
 })

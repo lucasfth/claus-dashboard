@@ -1,10 +1,12 @@
 import { internalMutation, internalQuery, mutation } from './_generated/server'
 import { internal } from './_generated/api'
 import { v } from 'convex/values'
+import { requireAuth } from './lib/requireAuth'
 
 export const send = mutation({
   args: { content: v.string() },
   handler: async (ctx, args) => {
+    await requireAuth(ctx)
     const content = args.content.trim()
     const now = Date.now()
     await ctx.db.insert('messages', {
