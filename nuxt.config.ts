@@ -3,7 +3,7 @@ import { loadEnv } from 'vite'
 const env = loadEnv(process.env.NODE_ENV ?? 'development', process.cwd(), '')
 
 export default defineNuxtConfig({
-  modules: ['nuxt-auth-utils', '@nuxtjs/tailwindcss'],
+  modules: ['@nuxtjs/tailwindcss'],
 
   app: {
     head: {
@@ -22,9 +22,6 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    session: {
-      password: env.NUXT_SESSION_PASSWORD ?? process.env.NUXT_SESSION_PASSWORD ?? '',
-    },
     convexHttpUrl:
       env.NUXT_CONVEX_HTTP_URL ??
       env.CONVEX_SITE_URL ??
@@ -38,6 +35,12 @@ export default defineNuxtConfig({
         env.CONVEX_URL ??
         process.env.NUXT_PUBLIC_CONVEX_URL ??
         process.env.CONVEX_URL ??
+        '',
+      convexSiteUrl:
+        env.CONVEX_SITE_URL ??
+        env.NUXT_CONVEX_HTTP_URL ??
+        process.env.CONVEX_SITE_URL ??
+        process.env.NUXT_CONVEX_HTTP_URL ??
         '',
     },
   },

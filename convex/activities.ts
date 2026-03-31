@@ -1,5 +1,6 @@
 import { internalMutation, query } from './_generated/server'
 import { v } from 'convex/values'
+import { requireAuth } from './lib/requireAuth'
 
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000
 const CLEANUP_BATCH_SIZE = 200
@@ -7,6 +8,7 @@ const CLEANUP_BATCH_SIZE = 200
 export const list = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuth(ctx)
     return ctx.db
       .query('activities')
       .withIndex('by_timestamp')

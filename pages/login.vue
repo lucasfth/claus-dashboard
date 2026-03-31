@@ -1,6 +1,22 @@
 <script setup lang="ts">
-const { loggedIn } = useUserSession()
-if (loggedIn.value) await navigateTo('/feed')
+const config = useRuntimeConfig()
+const siteUrl = config.public.convexSiteUrl
+
+const authUrl = computed(() => {
+  if (!import.meta.client || !siteUrl) return '#'
+  return `${siteUrl}/api/auth/github?redirectTo=${encodeURIComponent(window.location.origin + '/feed')}`
+})
+
+onMounted(async () => {
+  if (!siteUrl) return
+  try {
+    const response = await fetch(`${siteUrl}/api/auth/getToken`, { credentials: 'include' })
+    if (response.ok) {
+      const data = await response.json()
+      if (data.token) await navigateTo('/feed')
+    }
+  } catch {}
+})
 </script>
 
 <template>
@@ -11,7 +27,7 @@ if (loggedIn.value) await navigateTo('/feed')
         <p class="text-gray-500 mt-2 text-sm">Sign in to see what Claus is up to</p>
       </div>
       <a
-        href="/auth/github"
+        :href="authUrl"
         class="inline-flex items-center gap-3 px-6 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-200 transition-colors"
       >
         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

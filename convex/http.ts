@@ -1,6 +1,7 @@
 import { httpRouter } from 'convex/server'
 import { httpAction } from './_generated/server'
 import { internal } from './_generated/api'
+import { auth } from './auth'
 
 const BRIDGE_SECRET = process.env.BRIDGE_SECRET
 
@@ -254,6 +255,7 @@ const clearChatMessages = httpAction(async (ctx, request) => {
 })
 
 const http = httpRouter()
+auth.addHttpRoutes(http)
 http.route({ path: '/pushActivity', method: 'POST', handler: pushActivity })
 http.route({ path: '/pushJobs', method: 'POST', handler: pushJobs })
 http.route({ path: '/pushCommands', method: 'POST', handler: pushCommands })

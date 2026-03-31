@@ -1,9 +1,11 @@
 import { internalMutation, internalQuery, query } from './_generated/server'
 import { v } from 'convex/values'
+import { requireAuth } from './lib/requireAuth'
 
 export const list = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuth(ctx)
     return ctx.db.query('commands').collect()
   },
 })

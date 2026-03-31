@@ -1,9 +1,11 @@
 import { query, internalMutation, mutation } from './_generated/server'
 import { v } from 'convex/values'
+import { requireAuth } from './lib/requireAuth'
 
 export const list = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuth(ctx)
     return await ctx.db.query('chatMessages')
       .withIndex('by_timestamp')
       .order('desc')
@@ -30,6 +32,7 @@ export const insert = internalMutation({
 export const togglePin = mutation({
   args: { id: v.id('chatMessages') },
   handler: async (ctx, args) => {
+    await requireAuth(ctx)
     const msg = await ctx.db.get(args.id)
     if (!msg) return
     await ctx.db.patch(args.id, { pinned: !msg.pinned })

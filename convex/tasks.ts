@@ -5,6 +5,7 @@ import {
   query,
 } from "./_generated/server";
 import { v } from "convex/values";
+import { requireAuth } from "./lib/requireAuth";
 
 const FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000;
 const BATCH_SIZE = 100;
@@ -27,6 +28,7 @@ async function allocateTaskId(ctx: any): Promise<number> {
 export const list = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuth(ctx);
     const statuses = [
       "todo",
       "in_progress",
@@ -49,6 +51,7 @@ export const list = query({
 export const getTask = query({
   args: { taskId: v.number() },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     const task = await ctx.db
       .query("tasks")
       .withIndex("by_taskId", (q) => q.eq("taskId", args.taskId))
@@ -75,6 +78,7 @@ export const create = mutation({
     githubLink: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     const taskId = await allocateTaskId(ctx);
     await ctx.db.insert("tasks", {
       taskId,
@@ -101,6 +105,7 @@ export const updateStatus = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     const patch: Record<string, unknown> = { status: args.status };
     if (args.status === "done") {
       patch.movedToDoneAt = Date.now();
@@ -122,6 +127,7 @@ export const updateTask = mutation({
     githubLink: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     const task = await ctx.db.get(args.id);
     if (!task) throw new Error("Task not found");
     if (task.status === "archived")
@@ -150,21 +156,10 @@ export const updateTask = mutation({
   },
 });
 
-export const clearRunAt = mutation({
-  args: { id: v.id("tasks") },
-  handler: async (ctx, args) => {
-    const task = await ctx.db.get(args.id);
-    if (!task) throw new Error("Task not found");
-    if (task.status === "archived") {
-      throw new Error("Cannot edit archived tasks");
-    }
-    await ctx.db.patch(args.id, { runAt: undefined });
-  },
-});
-
 export const cancel = mutation({
   args: { id: v.id("tasks") },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     await ctx.db.patch(args.id, { status: "cancelled" });
   },
 });
