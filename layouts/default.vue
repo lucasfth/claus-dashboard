@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const route = useRoute()
-const { loggedIn, clear } = useUserSession()
+const { loggedIn, clear } = useConvexAuth()
 const { isDark, toggle } = useTheme()
 
 const nav = [
