@@ -5,6 +5,12 @@ import { authTables } from '@convex-dev/auth/server'
 export default defineSchema({
   ...authTables,
 
+  // Controls dashboard access — set approved: true in Convex dashboard to grant access
+  userAccess: defineTable({
+    userId: v.id('users'),
+    approved: v.boolean(),
+  }).index('by_userId', ['userId']),
+
   activities: defineTable({
     timestamp: v.number(),
     type: v.union(

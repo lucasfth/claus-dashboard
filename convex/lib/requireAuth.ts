@@ -7,5 +7,12 @@ export async function requireAuth(
 ): Promise<string> {
   const userId = await getAuthUserId(ctx)
   if (userId === null) throw new ConvexError('Unauthorized')
+
+  const access = await ctx.db
+    .query('userAccess')
+    .withIndex('by_userId', q => q.eq('userId', userId))
+    .unique()
+  if (!access?.approved) throw new ConvexError('Access denied')
+
   return userId
 }
