@@ -1,27 +1,27 @@
 export function useConvexAuth() {
-  const config = useRuntimeConfig()
-  const siteUrl = config.public.convexSiteUrl
-
-  const loggedIn = ref(false)
+  const loggedIn = ref(false);
 
   onMounted(async () => {
-    if (!siteUrl) return
     try {
-      const response = await fetch(`${siteUrl}/api/auth/getToken`, { credentials: 'include' })
+      const response = await fetch("/api/auth/getToken", {
+        credentials: "include",
+      });
       if (response.ok) {
-        const data = await response.json()
-        loggedIn.value = !!data.token
+        const data = await response.json();
+        loggedIn.value = !!data.token;
       }
     } catch {}
-  })
+  });
 
   async function clear() {
-    if (!siteUrl) return
     try {
-      await fetch(`${siteUrl}/api/auth/signOut`, { method: 'POST', credentials: 'include' })
+      await fetch("/api/auth/signOut", {
+        method: "POST",
+        credentials: "include",
+      });
     } catch {}
-    loggedIn.value = false
+    loggedIn.value = false;
   }
 
-  return { loggedIn, clear }
+  return { loggedIn, clear };
 }

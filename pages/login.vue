@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const config = useRuntimeConfig()
-const siteUrl = config.public.convexSiteUrl
+const authUrl = '/api/auth'
 
 const email = ref('')
 const password = ref('')
@@ -10,9 +10,8 @@ const mode = ref<'signIn' | 'signUp'>('signIn')
 const signedUp = ref(false)
 
 onMounted(async () => {
-  if (!siteUrl) return
   try {
-    const response = await fetch(`${siteUrl}/api/auth/getToken`, { credentials: 'include' })
+    const response = await fetch(`${authUrl}/getToken`, { credentials: 'include' })
     if (response.ok) {
       const data = await response.json()
       if (data.token) await navigateTo('/feed')
@@ -21,12 +20,11 @@ onMounted(async () => {
 })
 
 async function submit() {
-  if (!siteUrl || !email.value || !password.value) return
+  if (!email.value || !password.value) return
   loading.value = true
   error.value = ''
   try {
-    const response = await fetch(`${siteUrl}/api/auth/signIn`, {
-      method: 'POST',
+    const response = await fetch(`${authUrl}/signIn`, {      method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -42,7 +40,14 @@ async function submit() {
       }
     } else {
       const data = await response.json().catch(() => ({}))
-      error.value = data.message ?? (mode.value === 'signIn' ? 'Invalid email or password' : 'Could not create account')
+      const message = data.message ?? (mode.value === 'signIn' ? 'Invalid email or password' : 'Could not create account')
+      if (response.status === 409) {
+        // Existing account: switch to sign-in mode automatically
+        mode.value = 'signIn'
+        error.value = 'Account already exists. Please sign in.'
+      } else {
+        error.value = message
+      }
     }
   } catch {
     error.value = 'Request failed'
