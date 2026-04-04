@@ -375,11 +375,16 @@ const STATUS_OPTIONS = [
           v-for="task in col.tasks"
           :key="task._id"
           draggable="true"
-          class="rounded-lg border bg-white dark:bg-gray-900/50 px-3 py-2.5 cursor-pointer select-none transition-all hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-sm"
+          tabindex="0"
+          role="button"
+          :aria-label="'Open task: ' + tTitle(task)"
+          class="rounded-lg border bg-white dark:bg-gray-900/50 px-3 py-2.5 cursor-pointer select-none transition-all hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500 outline-none"
           :class="draggingId === task._id ? 'opacity-40 scale-95 border-gray-300 dark:border-gray-700' : 'border-gray-200 dark:border-gray-800/60'"
           @dragstart="onDragStart($event, task)"
           @dragend="onDragEnd"
           @click="openTask(task)"
+          @keydown.enter="openTask(task)"
+          @keydown.space.prevent="openTask(task)"
         >
           <!-- Top row -->
           <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
@@ -406,11 +411,15 @@ const STATUS_OPTIONS = [
             <span class="text-xs text-gray-400 dark:text-gray-700">{{ relTime(task.createdAt) }}</span>
             <button
               v-if="task.status !== 'done' && task.status !== 'cancelled'"
-              class="text-xs transition-colors px-0.5 leading-none"
+              class="text-xs transition-colors px-0.5 leading-none focus-visible:text-red-500 dark:focus-visible:text-red-400 outline-none"
               :class="confirmCancelId === task._id
                 ? 'text-red-500 dark:text-red-400 font-medium'
                 : 'text-gray-300 dark:text-gray-700 hover:text-red-500 dark:hover:text-red-400'"
+              :aria-label="confirmCancelId === task._id ? 'Confirm cancel task' : 'Cancel task'"
+              :title="confirmCancelId === task._id ? 'Confirm cancel task' : 'Cancel task'"
               @click.stop="handleCancel(task._id, $event)"
+              @keydown.enter.stop="handleCancel(task._id, $event)"
+              @keydown.space.stop.prevent="handleCancel(task._id, $event)"
             >{{ confirmCancelId === task._id ? 'confirm?' : '\u00d7' }}</button>
           </div>
         </div>
@@ -440,8 +449,12 @@ const STATUS_OPTIONS = [
               <option v-for="opt in STATUS_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
             </select>
             <div class="flex-1" />
-            <button v-if="!editing" class="text-xs text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" @click="startEdit">edit</button>
-            <button class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors text-xl leading-none ml-1" @click="closeModal">&times;</button>
+            <button v-if="!editing" class="text-xs text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors focus-visible:text-blue-600 dark:focus-visible:text-blue-400 outline-none" @click="startEdit">edit</button>
+            <button
+              class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors text-xl leading-none ml-1 focus-visible:text-gray-700 dark:focus-visible:text-gray-200 outline-none"
+              aria-label="Close modal"
+              @click="closeModal"
+            >&times;</button>
           </div>
 
           <div class="flex-1 overflow-y-auto px-5 py-4 space-y-5">
