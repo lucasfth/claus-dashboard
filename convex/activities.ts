@@ -33,8 +33,8 @@ export const insertInternal = internalMutation({
     await ctx.db.insert('activities', {
       timestamp: Date.now(),
       type: args.type,
-      summary: args.summary,
-      details: args.details,
+      summary: args.summary.slice(0, 1000),
+      details: args.details?.slice(0, 10000),
     })
   },
 })

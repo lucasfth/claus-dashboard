@@ -7,7 +7,7 @@ export const send = mutation({
   args: { content: v.string() },
   handler: async (ctx, args) => {
     await requireAuth(ctx)
-    const content = args.content.trim()
+    const content = args.content.trim().slice(0, 10000)
     const now = Date.now()
     await ctx.db.insert('messages', {
       content,
