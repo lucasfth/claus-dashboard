@@ -38,6 +38,15 @@ export function getAuthCookie(event: H3Event, kind: CookieKind): string | null {
   return getCookie(event, cookieName(event, kind)) ?? null;
 }
 
+/**
+ * Validates that a redirect URL is safe (internal to the application)
+ * to prevent open redirect vulnerabilities.
+ */
+export function isSafeRedirect(url: string | null | undefined): boolean {
+  if (!url) return false;
+  return url.startsWith("/") && !url.startsWith("//");
+}
+
 export function setAuthCookie(
   event: H3Event,
   kind: CookieKind,

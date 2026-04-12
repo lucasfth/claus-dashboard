@@ -1,11 +1,16 @@
 import { getQuery, sendRedirect } from "h3";
-import { runAuthSignIn, setAuthCookie } from "../../utils/convexAuth";
+import {
+  runAuthSignIn,
+  setAuthCookie,
+  isSafeRedirect,
+} from "../../utils/convexAuth";
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
+  const redirectToParam = query.redirectTo;
   const redirectTo =
-    typeof query.redirectTo === "string" && query.redirectTo
-      ? query.redirectTo
+    typeof redirectToParam === "string" && isSafeRedirect(redirectToParam)
+      ? redirectToParam
       : "/tasks";
 
   const result = await runAuthSignIn(event, {
