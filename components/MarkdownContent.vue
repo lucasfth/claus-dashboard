@@ -37,10 +37,10 @@ async function render() {
       ? hljs.highlight(text, { language: lang }).value
       : hljs.highlightAuto(text).value
     const langLabel = lang ? `<span class="hljs-lang">${lang}</span>` : ''
-    return `<pre class="hljs-pre">${langLabel}<code class="hljs">${highlighted}</code></pre>`
+    return `<pre class="hljs-pre">${langLabel}<button class="copy-btn" type="button" aria-label="Copy code">copy</button><code class="hljs">${highlighted}</code></pre>`
   } as any
 
-  const html = await marked.parse(props.content, { renderer })
+  const html = await marked.parse(props.content, { renderer, gfm: true, breaks: true })
 
   // Bail if a newer render started
   if (id !== renderCount) return
@@ -68,7 +68,27 @@ async function render() {
   }
 }
 
-onMounted(render)
+onMounted(() => {
+  render()
+  containerRef.value?.addEventListener('click', async (e) => {
+    const btn = (e.target as HTMLElement).closest('.copy-btn') as HTMLButtonElement | null
+    if (!btn) return
+    const code = btn.parentElement?.querySelector('code')?.innerText
+    if (!code) return
+    try {
+      await navigator.clipboard.writeText(code)
+      const prev = btn.innerText
+      btn.innerText = 'copied!'
+      btn.classList.add('copied')
+      setTimeout(() => {
+        btn.innerText = prev
+        btn.classList.remove('copied')
+      }, 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  })
+})
 watch(() => props.content, render)
 watch(isDark, render)
 </script>
@@ -106,7 +126,13 @@ watch(isDark, render)
   @apply relative bg-gray-900 dark:bg-gray-950 rounded-xl p-4 overflow-x-auto my-2 text-xs;
 }
 .md pre.hljs-pre .hljs-lang {
-  @apply absolute top-2 right-3 text-gray-500 dark:text-gray-600 text-[10px] font-mono pointer-events-none;
+  @apply absolute top-2 left-3 text-gray-500 dark:text-gray-600 text-[10px] font-mono pointer-events-none;
+}
+.md .copy-btn {
+  @apply absolute top-2 right-3 text-[10px] font-mono text-gray-500 dark:text-gray-600 opacity-40 hover:opacity-100 focus-visible:opacity-100 transition-opacity outline-none;
+}
+.md .copy-btn.copied {
+  @apply opacity-100 text-green-500 dark:text-green-400;
 }
 .md code.hljs {
   @apply font-mono text-xs block bg-transparent p-0;

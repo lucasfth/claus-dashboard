@@ -483,7 +483,7 @@ const STATUS_OPTIONS = [
               </div>
               <div class="mt-3">
                 <p class="text-xs text-gray-400 dark:text-gray-600 font-medium uppercase tracking-wide mb-1.5">Description</p>
-                <pre class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-sans leading-relaxed">{{ tDesc(selectedTask) }}</pre>
+                <MarkdownContent :content="tDesc(selectedTask)" />
               </div>
             </div>
 
@@ -565,7 +565,7 @@ const STATUS_OPTIONS = [
                       <button :disabled="savingNote" class="btn-primary text-xs py-1" @click="saveNote">{{ savingNote ? 'saving\u2026' : 'save' }}</button>
                     </div>
                   </div>
-                  <pre v-else class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-sans leading-relaxed">{{ note.content }}</pre>
+                  <MarkdownContent v-else :content="note.content" />
                 </div>
               </div>
 
