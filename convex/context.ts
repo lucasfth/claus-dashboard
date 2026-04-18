@@ -22,10 +22,11 @@ export const upsert = mutation({
   handler: async (ctx, args) => {
     await requireAuth(ctx)
     const existing = await ctx.db.query('contextNotes').first()
+    const content = args.content.slice(0, 10000)
     if (existing) {
-      await ctx.db.patch(existing._id, { content: args.content, updatedAt: Date.now() })
+      await ctx.db.patch(existing._id, { content, updatedAt: Date.now() })
     } else {
-      await ctx.db.insert('contextNotes', { content: args.content, updatedAt: Date.now() })
+      await ctx.db.insert('contextNotes', { content, updatedAt: Date.now() })
     }
   },
 })
@@ -34,10 +35,11 @@ export const upsertInternal = internalMutation({
   args: { content: v.string() },
   handler: async (ctx, args) => {
     const existing = await ctx.db.query('contextNotes').first()
+    const content = args.content.slice(0, 10000)
     if (existing) {
-      await ctx.db.patch(existing._id, { content: args.content, updatedAt: Date.now() })
+      await ctx.db.patch(existing._id, { content, updatedAt: Date.now() })
     } else {
-      await ctx.db.insert('contextNotes', { content: args.content, updatedAt: Date.now() })
+      await ctx.db.insert('contextNotes', { content, updatedAt: Date.now() })
     }
   },
 })
