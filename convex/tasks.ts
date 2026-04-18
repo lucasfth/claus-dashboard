@@ -210,7 +210,7 @@ export const addNoteInternal = internalMutation({
     const now = Date.now();
     await ctx.db.insert("taskNotes", {
       taskId: task._id,
-      content: args.content.trim(),
+      content: args.content.trim().slice(0, 10000),
       author: args.author,
       createdAt: now,
       updatedAt: now,

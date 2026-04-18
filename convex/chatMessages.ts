@@ -22,7 +22,7 @@ export const insert = internalMutation({
   handler: async (ctx, args) => {
     await ctx.db.insert('chatMessages', {
       role: args.role,
-      content: args.content,
+      content: args.content.slice(0, 10000),
       timestamp: args.timestamp,
       pinned: false,
     })

@@ -40,7 +40,7 @@ export const add = mutation({
     const now = Date.now()
     return ctx.db.insert('taskNotes', {
       taskId: args.taskId,
-      content: args.content.trim(),
+      content: args.content.trim().slice(0, 10000),
       author: args.author,
       createdAt: now,
       updatedAt: now,
@@ -58,7 +58,7 @@ export const edit = mutation({
     const note = await ctx.db.get(args.id)
     if (!note) throw new Error('Note not found')
     await ctx.db.patch(args.id, {
-      content: args.content.trim(),
+      content: args.content.trim().slice(0, 10000),
       updatedAt: Date.now(),
     })
   },
