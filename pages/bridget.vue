@@ -9,6 +9,11 @@ const setSchedule = useConvexMutation(api.jobs.setSchedule)
 const setPrompt = useConvexMutation(api.jobs.setPrompt)
 
 const selectedJob = ref<{ name: string; content: string } | null>(null)
+const previewContent = computed(() => {
+  if (!selectedJob.value) return ''
+  const lang = selectedJob.value.content.trim().startsWith('#!') || selectedJob.value.content.includes('import ') ? 'python' : ''
+  return `\`\`\`${lang}\n${selectedJob.value.content}\n\`\`\``
+})
 
 type EditField = 'schedule' | 'prompt'
 const editing = ref<{ name: string; field: EditField } | null>(null)
@@ -232,14 +237,16 @@ function isEditing(name: string, field: EditField) {
 
     <!-- Code preview modal -->
     <Teleport to="body">
-      <div v-if="selectedJob" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div v-if="selectedJob" class="fixed inset-0 z-50 flex items-center justify-center p-4" @keydown.esc.window="selectedJob = null">
         <div class="absolute inset-0 bg-black/60" @click="selectedJob = null" />
-        <div class="relative bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl">
+        <div class="relative bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
           <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 shrink-0">
             <span class="text-sm font-medium">{{ formatJobName(selectedJob.name) }}</span>
-            <button class="text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white text-lg leading-none" @click="selectedJob = null">&times;</button>
+            <button class="text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white text-lg leading-none focus-visible:ring-1 focus-visible:ring-gray-400 outline-none rounded" aria-label="Close" @click="selectedJob = null">&times;</button>
           </div>
-          <pre class="p-4 text-xs text-gray-700 dark:text-gray-300 overflow-auto font-mono leading-relaxed">{{ selectedJob.content }}</pre>
+          <div class="flex-1 overflow-y-auto p-4">
+            <MarkdownContent :content="previewContent" />
+          </div>
         </div>
       </div>
     </Teleport>
