@@ -9,3 +9,8 @@
 **Vulnerability:** The OAuth sign-in and callback handlers accepted a `redirectTo` query parameter without validation, allowing attackers to construct links that would redirect users to malicious external domains after a successful login.
 **Learning:** Post-authentication redirects must always be validated to ensure they are internal to the application.
 **Prevention:** Use a utility like `isSafeRedirect` to verify that the redirect path starts with a single `/` and not `//`, preventing off-site redirection.
+
+## 2025-05-16 - Validation vs Truncation in Synchronization
+**Vulnerability:** Resource limits implemented via silent truncation and query capping (`.take(limit)`) in synchronization logic (like `upsertMany`) can lead to partial updates, stale data, or accidental deletion of records not included in the capped result set.
+**Learning:** Security constraints must respect the integrity of the underlying business logic. Silent truncation can corrupt configuration data (e.g., cron strings or LLM prompts).
+**Prevention:** Prefer explicit validation (throwing errors for oversized payloads) over silent truncation. For synchronization, apply limits to the total count at the point of insertion rather than capping the reconciliation query itself.
