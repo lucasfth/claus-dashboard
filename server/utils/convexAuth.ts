@@ -41,10 +41,12 @@ export function getAuthCookie(event: H3Event, kind: CookieKind): string | null {
 /**
  * Validates that a redirect URL is safe (internal to the application)
  * to prevent open redirect vulnerabilities.
+ * The regex ensures the URL starts with a single / and is not followed by // or /\
+ * which could be used to bypass relative path checks in some browsers.
  */
 export function isSafeRedirect(url: string | null | undefined): boolean {
   if (!url) return false;
-  return url.startsWith("/") && !url.startsWith("//");
+  return /^\/(?!\/|\\)/.test(url);
 }
 
 export function setAuthCookie(

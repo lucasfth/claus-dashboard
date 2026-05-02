@@ -14,3 +14,8 @@
 **Vulnerability:** Resource limits implemented via silent truncation and query capping (`.take(limit)`) in synchronization logic (like `upsertMany`) can lead to partial updates, stale data, or accidental deletion of records not included in the capped result set.
 **Learning:** Security constraints must respect the integrity of the underlying business logic. Silent truncation can corrupt configuration data (e.g., cron strings or LLM prompts).
 **Prevention:** Prefer explicit validation (throwing errors for oversized payloads) over silent truncation. For synchronization, apply limits to the total count at the point of insertion rather than capping the reconciliation query itself.
+
+## 2025-05-17 - Robust Open Redirect Validation
+**Vulnerability:** The initial `isSafeRedirect` implementation only checked for `//` to prevent off-site redirects, which could be bypassed using `/\` as some browsers normalize the backslash to a forward slash.
+**Learning:** Simple string prefix checks are often insufficient for URL validation due to browser-specific normalization behaviors.
+**Prevention:** Use a regex like `/^\/(?!\/|\\)/` to explicitly reject both double slashes and backslash-slash combinations at the start of a redirect path.
