@@ -304,7 +304,7 @@ const STATUS_OPTIONS = [
     <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div class="min-w-0">
         <h1 class="text-xl font-semibold">Tasks</h1>
-        <p class="text-xs text-gray-500 dark:text-gray-600 mt-0.5">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
           Drag cards between columns &middot; click to open &middot; scheduled tasks run automatically
         </p>
       </div>
@@ -338,7 +338,7 @@ const STATUS_OPTIONS = [
       <div class="flex justify-end gap-2">
         <button class="btn-ghost" @click="showCreate = false">cancel</button>
         <button :disabled="creating || !newTitle.trim() || !newDesc.trim()" class="btn-primary" @click="submitCreate">
-          {{ creating ? 'creating\u2026' : 'create' }}
+          {{ creating ? 'creating…' : 'create' }}
         </button>
       </div>
     </div>
@@ -367,7 +367,7 @@ const STATUS_OPTIONS = [
         <!-- Column header -->
         <div class="flex items-center gap-2 px-1 pb-1.5 border-b" :class="col.accentBorder">
           <span class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">{{ col.label }}</span>
-          <span class="text-xs text-gray-400 dark:text-gray-600 font-mono">{{ col.tasks.length }}</span>
+          <span class="text-xs text-gray-400 dark:text-gray-500 font-mono">{{ col.tasks.length }}</span>
         </div>
 
         <!-- Cards -->
@@ -388,13 +388,13 @@ const STATUS_OPTIONS = [
         >
           <!-- Top row -->
           <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
-            <span class="text-xs font-mono text-gray-400 dark:text-gray-600">T-{{ task.taskId ?? '?' }}</span>
+            <span class="text-xs font-mono text-gray-400 dark:text-gray-500">T-{{ task.taskId ?? '?' }}</span>
             <span
               v-if="task.priority"
               class="text-xs px-1.5 rounded border font-medium leading-5"
               :class="PRIORITY_CLS[task.priority]"
             >{{ task.priority }}</span>
-            <span v-if="task.runAt" class="text-xs text-gray-400 dark:text-gray-600 ml-auto">⏰ {{ fmtDate(task.runAt) }}</span>
+            <span v-if="task.runAt" class="text-xs text-gray-400 dark:text-gray-500 ml-auto">⏰ {{ fmtDate(task.runAt) }}</span>
           </div>
           <!-- Title -->
           <p class="text-sm text-gray-900 dark:text-white font-medium leading-snug line-clamp-2">{{ tTitle(task) }}</p>
@@ -408,13 +408,13 @@ const STATUS_OPTIONS = [
           </div>
           <!-- Footer -->
           <div class="flex items-center justify-between mt-1.5">
-            <span class="text-xs text-gray-400 dark:text-gray-700">{{ relTime(task.createdAt) }}</span>
+            <span class="text-xs text-gray-400 dark:text-gray-500">{{ relTime(task.createdAt) }}</span>
             <button
               v-if="task.status !== 'done' && task.status !== 'cancelled'"
               class="text-xs transition-colors px-0.5 leading-none focus-visible:text-red-500 dark:focus-visible:text-red-400 outline-none"
               :class="confirmCancelId === task._id
                 ? 'text-red-500 dark:text-red-400 font-medium'
-                : 'text-gray-300 dark:text-gray-700 hover:text-red-500 dark:hover:text-red-400'"
+                : 'text-gray-300 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400'"
               :aria-label="confirmCancelId === task._id ? 'Confirm cancel task' : 'Cancel task'"
               :title="confirmCancelId === task._id ? 'Confirm cancel task' : 'Cancel task'"
               @click.stop="handleCancel(task._id, $event)"
@@ -424,7 +424,7 @@ const STATUS_OPTIONS = [
           </div>
         </div>
 
-        <p v-if="col.tasks.length === 0" class="text-xs text-gray-400 dark:text-gray-700 text-center py-3">empty</p>
+        <p v-if="col.tasks.length === 0" class="text-xs text-gray-400 dark:text-gray-500 text-center py-3">empty</p>
       </div>
     </div>
 
@@ -440,7 +440,7 @@ const STATUS_OPTIONS = [
 
           <!-- Panel header -->
           <div class="flex items-center gap-2 px-5 py-3 border-b border-gray-200 dark:border-gray-800 shrink-0">
-            <span class="text-xs font-mono text-gray-400 dark:text-gray-600">T-{{ selectedTask.taskId ?? '?' }}</span>
+            <span class="text-xs font-mono text-gray-400 dark:text-gray-500">T-{{ selectedTask.taskId ?? '?' }}</span>
             <select
               :value="selectedTask.status === 'pending' ? 'todo' : selectedTask.status"
               class="text-xs border rounded px-2 py-0.5 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none"
@@ -470,7 +470,7 @@ const STATUS_OPTIONS = [
                   class="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800/60 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700/50"
                 >{{ label }}</span>
               </div>
-              <div class="flex flex-col gap-1 mt-2 text-xs text-gray-500">
+              <div class="flex flex-col gap-1 mt-2 text-xs text-gray-400">
                 <span v-if="selectedTask.runAt">⏰ Scheduled: {{ fmtDate(selectedTask.runAt) }}</span>
                 <a
                   v-if="selectedTask.githubLink"
@@ -482,7 +482,7 @@ const STATUS_OPTIONS = [
                 >🔗 {{ selectedTask.githubLink }}</a>
               </div>
               <div class="mt-3">
-                <p class="text-xs text-gray-400 dark:text-gray-600 font-medium uppercase tracking-wide mb-1.5">Description</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide mb-1.5">Description</p>
                 <MarkdownContent :content="tDesc(selectedTask)" />
               </div>
             </div>
@@ -521,19 +521,19 @@ const STATUS_OPTIONS = [
               <input v-model="editGhLink" placeholder="GitHub link" class="input w-full" />
               <div class="flex gap-2">
                 <button class="btn-ghost" @click="editing = false">cancel</button>
-                <button :disabled="saving" class="btn-primary" @click="saveEdit">{{ saving ? 'saving\u2026' : 'save' }}</button>
+                <button :disabled="saving" class="btn-primary" @click="saveEdit">{{ saving ? 'saving…' : 'save' }}</button>
               </div>
             </div>
 
             <!-- Notes section -->
             <div class="border-t border-gray-200 dark:border-gray-800 pt-4">
-              <p class="text-xs text-gray-400 dark:text-gray-600 font-medium uppercase tracking-wide mb-3">Notes</p>
+              <p class="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide mb-3">Notes</p>
 
               <div v-if="taskNotes === undefined" class="space-y-2 mb-3">
                 <div v-for="i in 2" :key="i" class="h-14 rounded bg-gray-100 dark:bg-gray-900/50 animate-pulse" />
               </div>
 
-              <p v-else-if="safeTaskNotes.length === 0" class="text-xs text-gray-400 dark:text-gray-700 mb-3">No notes yet.</p>
+              <p v-else-if="safeTaskNotes.length === 0" class="text-xs text-gray-400 dark:text-gray-500 mb-3">No notes yet.</p>
 
               <div v-else class="space-y-3 mb-3">
                 <div
@@ -546,8 +546,8 @@ const STATUS_OPTIONS = [
                       class="text-xs font-medium"
                       :class="note.author === 'claus' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'"
                     >{{ note.author === 'claus' ? 'Claus' : 'Lucas' }}</span>
-                    <span class="text-xs text-gray-400 dark:text-gray-700">{{ relTime(note.createdAt) }}</span>
-                    <span v-if="note.updatedAt !== note.createdAt" class="text-xs text-gray-400 dark:text-gray-700 italic">edited</span>
+                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ relTime(note.createdAt) }}</span>
+                    <span v-if="note.updatedAt !== note.createdAt" class="text-xs text-gray-400 dark:text-gray-500 italic">edited</span>
                     <div class="flex-1" />
                     <template v-if="editNoteId !== note._id">
                       <button class="text-xs text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors" @click="startEditNote(note)">edit</button>
@@ -562,7 +562,7 @@ const STATUS_OPTIONS = [
                     <textarea v-model="editNoteText" rows="3" class="input w-full text-xs font-mono resize-none" />
                     <div class="flex gap-2">
                       <button class="btn-ghost text-xs py-1" @click="editNoteId = null">cancel</button>
-                      <button :disabled="savingNote" class="btn-primary text-xs py-1" @click="saveNote">{{ savingNote ? 'saving\u2026' : 'save' }}</button>
+                      <button :disabled="savingNote" class="btn-primary text-xs py-1" @click="saveNote">{{ savingNote ? 'saving…' : 'save' }}</button>
                     </div>
                   </div>
                   <MarkdownContent v-else :content="note.content" />
@@ -573,16 +573,16 @@ const STATUS_OPTIONS = [
               <div class="space-y-2">
                 <textarea
                   v-model="noteText"
-                  placeholder="Add a note\u2026 (markdown)"
+                  placeholder="Add a note… (markdown)"
                   rows="2"
                   class="input w-full text-sm resize-none"
                   @keydown.meta.enter="submitNote"
                   @keydown.ctrl.enter="submitNote"
                 />
                 <div class="flex items-center justify-between">
-                  <span class="text-xs text-gray-400 dark:text-gray-700">&#8984;&#8629; to add</span>
+                  <span class="text-xs text-gray-400 dark:text-gray-500">⌘⏎ to add</span>
                   <button :disabled="addingNote || !noteText.trim()" class="btn-primary text-xs py-1" @click="submitNote">
-                    {{ addingNote ? 'adding\u2026' : 'add note' }}
+                    {{ addingNote ? 'adding…' : 'add note' }}
                   </button>
                 </div>
               </div>
@@ -599,9 +599,9 @@ const STATUS_OPTIONS = [
   @apply bg-white dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded px-3 py-1.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-gray-400 dark:focus:border-gray-500;
 }
 .btn-primary {
-  @apply px-3 py-1.5 rounded text-sm font-medium transition-all disabled:opacity-50 border bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-transparent hover:bg-gray-700 dark:hover:bg-gray-100;
+  @apply px-3 py-1.5 rounded text-sm font-medium transition-all disabled:opacity-50 border bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-transparent hover:bg-gray-700 dark:hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950 outline-none;
 }
 .btn-ghost {
-  @apply px-3 py-1.5 rounded text-sm font-medium transition-all border bg-white dark:bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-800;
+  @apply px-3 py-1.5 rounded text-sm font-medium transition-all border bg-white dark:bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-800 focus-visible:ring-2 focus-visible:ring-blue-500 outline-none;
 }
 </style>
