@@ -14,7 +14,7 @@
     "lint": "oxlint . .ts,.vue --fix"
   },
   "dependencies": {
-    "@auth/core": "^0.37.2",
+    "@auth/core": "^0.41.3",
     "@convex-dev/auth": "^0.0.87",
     "convex": "^1.33.1",
     "highlight.js": "^11.11.1",
